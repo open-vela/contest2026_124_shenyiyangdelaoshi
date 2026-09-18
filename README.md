@@ -1,3 +1,52 @@
+# ESP32-P4 openvela AI 设备诊断助手
+
+队伍：**神一样的老师（124）**。主方向：新硬件平台适配，结合 openvela AI 功能验证。
+
+在 ESP32-P4 Function EV 板上集成 USB NSH、以太网、SmartFS 与 openvela Agent，新增 `device_info`、`network_status` 两项只读工具。模型推理在云端，工具执行在板端；同步 `ai_agent ask` 完成后返回 NSH。
+
+不宣称首次 ESP32-P4 适配。已有架构、驱动/HAL 与 Agent 框架属于上游工作，本项目贡献是目标配置、跨层集成、设备工具和围绕实际故障的运行时修正。
+
+## 评审入口
+
+- [官方模板技术报告](docs/技术报告-官方模板-20260918.docx)：3.1–3.7 全部填写，区分验证结果与限制。
+- [源码归档与还原说明](source-changes/README.md)：固定基线、继承移植提交、当前补丁、新增文件及实际固件配置。
+- [自建开发 Skill](skills/esp32p4-openvela-bringup-debug/SKILL.md)：栈、堆、USB、存储、TLS 与时间的证据化排障。
+- [真实 AI Coding 日志](logs/zealsoftstudio/manifest.json)：当前 Codex 对话从 2026-08-31 开始的公开事件，已自动脱敏；[导出说明](logs/EXPORT-README.md)。
+- [实机历史测试摘录](docs/evidence-2026-09-18/hardware-test-excerpts.md)：直接来源于真实会话中的用户串口/GDB 回传，不是重做实验。
+- [截图来源清单](docs/evidence-2026-09-18/provenance.json)：照片与终端截图从参赛者补图后的 PPT 无修改提取。
+
+## 运行与验证
+
+先按 `source-changes/README.md` 在独立 openvela 工作区还原源码和配置。构建依赖交叉工具链、cJSON、mbedTLS、ESP HAL 等；独立环境的干净构建仍需最终验收。实际实现不在组委会的 hello 示例里。
+
+实机配置网络、有效时间与 LLM 密钥后使用：
+
+```text
+ifconfig
+free
+ai_agent ask 请调用device_info查看设备状态
+ai_agent ask 请调用network_status查看网口配置
+free
+ps
+```
+
+云端演示后端为华为 MaaS OpenAI 兼容接口，密钥不随源码、报告或镜像数据区分发。没有离线大模型推理；`network_status` 的接口状态不能代替公网连通性测试。
+
+## 原创增量与限制
+
+主要增量包括同步 CLI Agent 生命周期、两个板端工具、实际 NSH 启动栈配置、flat 共享堆、USB 缓冲与日志路径、TLS 套件和单调时钟适配。继承的移植系列作者记录见 `source-changes/inherited-authors.txt`，不把摄像头、音频等未测功能列作本项目成果。
+
+当前配置与 defconfig 的 SmartFS 名称长度存在 16/48 差异；TLS 为 `VERIFY_OPTIONAL`；PSRAM 未作为用户堆。没有完成长稳、功耗、重复推理时延等基准。本次源代码归档不替代公共仓 PR；待提交对应 PR 后补链接。
+
+## 提交状态
+
+本地工作分支：`dev-ai-contest-2026`。文件归集完成不等于 GitHub 已推送或官网已上传。官网压缩包只需报告、视频、照片及可选 PPT；源码与日志留在本仓。
+
+此仓保留组委会 app/board/quickapp 样例目录作原始骨架，不是本项目实现入口。实际实现依据上述源码归档。新增原创代码按 Apache-2.0 提供，继承源码保留原许可和作者声明。
+
+<details>
+<summary>原始参赛仓使用说明（参考，不是本项目成果）</summary>
+
 # contest2026_124_shenyiyangdelaoshi
 
 👋 欢迎参加 **2026 首届 openvela AI 硬件开发者大赛**！
@@ -146,3 +195,5 @@ cd ..
 
 `contest2026_<编号>_<队伍名>` — 编号三位零填充；队名 slug（全小写、英文/拼音、连字符）。例：`contest2026_124_shenyiyangdelaoshi`。
 （仓库由组委会统一创建，**每队仅一个仓**，无需自行命名。）
+
+</details>

@@ -1,0 +1,82 @@
+diff --git a/netutils/netinit/Kconfig b/netutils/netinit/Kconfig
+index 14335c612..9e6648de1 100644
+--- a/netutils/netinit/Kconfig
++++ b/netutils/netinit/Kconfig
+@@ -118,6 +118,24 @@ config NETINIT_THREAD_PRIORITY
+ 		PHY polling is CPU intensive and can interfere with the usability of
+ 		of threads competing for CPU bandwidth.
+ 
++config NETINIT_DHCPC_RETRIES
++	int "DHCP retry count"
++	default 0
++	depends on NETINIT_DHCPC
++	range 0 100
++	---help---
++		Retry DHCP this many times after the initial request fails.  This is
++		useful when an Ethernet PHY needs time to establish the link after the
++		interface is brought up.  Zero preserves the single-attempt behavior.
++
++config NETINIT_DHCPC_RETRY_MSEC
++	int "DHCP retry interval (msec)"
++	default 2000
++	depends on NETINIT_DHCPC && NETINIT_DHCPC_RETRIES > 0
++	range 100 60000
++	---help---
++		Delay between failed DHCP requests.
++
+ config NETINIT_RETRY_MOUNTPATH
+ 	int "Network initialization retry mount path count"
+ 	default 0
+diff --git a/netutils/netinit/netinit.c b/netutils/netinit/netinit.c
+index 1a2e09fe4..9153ed125 100644
+--- a/netutils/netinit/netinit.c
++++ b/netutils/netinit/netinit.c
+@@ -75,6 +75,14 @@
+  * Pre-processor Definitions
+  ****************************************************************************/
+ 
++#ifndef CONFIG_NETINIT_DHCPC_RETRIES
++#  define CONFIG_NETINIT_DHCPC_RETRIES 0
++#endif
++
++#ifndef CONFIG_NETINIT_DHCPC_RETRY_MSEC
++#  define CONFIG_NETINIT_DHCPC_RETRY_MSEC 2000
++#endif
++
+ /* Pick one and at most one supported link layer so that all decisions are
+  * made consistently.
+  *
+@@ -659,9 +667,18 @@ static void netinit_net_bringup(void)
+ #ifdef CONFIG_NETUTILS_DHCPC
+   if (g_use_dhcpc)
+     {
+-      if (netlib_obtain_ipv4addr(NET_DEVNAME) < 0)
++      int retries = CONFIG_NETINIT_DHCPC_RETRIES;
++
++      while (netlib_obtain_ipv4addr(NET_DEVNAME) < 0)
+         {
+-          return;
++          if (retries-- <= 0)
++            {
++              return;
++            }
++
++          ninfo("DHCP failed; retrying in %d ms\n",
++                CONFIG_NETINIT_DHCPC_RETRY_MSEC);
++          usleep(CONFIG_NETINIT_DHCPC_RETRY_MSEC * 1000);
+         }
+     }
+ #endif
+diff --git a/nshlib/nsh_command.c b/nshlib/nsh_command.c
+index 7bca9f54e..aed79cbcc 100644
+--- a/nshlib/nsh_command.c
++++ b/nshlib/nsh_command.c
+@@ -1269,7 +1269,7 @@ int nsh_command(FAR struct nsh_vtbl_s *vtbl, int argc, FAR char *argv[])
+ 
+   index = builtin_isavail(cmd);
+ 
+-  if (index > 0)
++  if (index >= 0)
+     {
+       /* Get the builtin structure by index */
+ 

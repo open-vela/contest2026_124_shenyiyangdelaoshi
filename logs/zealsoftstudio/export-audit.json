@@ -1,0 +1,32 @@
+{
+  "source_file": "rollout-2026-08-31T20-52-07-01a057e0-87e4-7fd2-8cdf-1a702aceefeb.jsonl",
+  "source_bytes": 37967361,
+  "source_sha256": "a19d6ea50ea8e55c192416d077be61289e2bb54ff8babe146df9999eed5b17b5",
+  "export_file": "logs/zealsoftstudio/2026-08-31/codex__01a057e0-87e4-7fd2-8cdf-1a702aceefeb.jsonl",
+  "export_sha256": "04172c9e70c97305d8722410266215e3cd8bdaf40c5c88a3c0633dee8feeaf6c",
+  "event_count": 3214,
+  "roles": {
+    "user": 127,
+    "assistant": 581,
+    "tool": 2506
+  },
+  "redaction_substitutions": 4641,
+  "excluded_record_types": {
+    "session_meta:None": 1,
+    "event_msg:task_started": 116,
+    "response_item:message": 12,
+    "world_state:None": 23,
+    "turn_context:None": 126,
+    "event_msg:item_completed": 2748,
+    "event_msg:turn_aborted": 2,
+    "event_msg:thread_settings_applied": 131,
+    "response_item:reasoning": 807,
+    "event_msg:token_count": 1192,
+    "event_msg:task_complete": 113,
+    "token_usage_record:None": 1102,
+    "compacted:None": 11
+  },
+  "cutoff_timestamp": "2026-09-18T12:11:44.664Z",
+  "format": "contest schema 1.0, custom transparent converter",
+  "caution": "Original local source is unmodified. Export metadata discloses exclusions; obtain organizer acceptance if raw collector format is mandated."
+}

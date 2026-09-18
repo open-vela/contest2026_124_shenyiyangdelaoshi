@@ -1,0 +1,61 @@
+{
+  "source_pptx_sha256": "20d97972690d821827ede84f229df48053f471a6fb5f36b3ea94e7cd75ab4576",
+  "images": [
+    {
+      "file": "board-photo.jpg",
+      "slide": 1,
+      "shape_index": 16,
+      "sha256": "fa955d248e2c6334aa27344ea32bffde424dd1c416c4fb85372b705e787e005c",
+      "origin": "user-edited PowerPoint, unmodified embedded image"
+    },
+    {
+      "file": "combined-tool-answer.png",
+      "slide": 6,
+      "shape_index": 14,
+      "sha256": "100ed97a215403f9cd4133d170bb350506dc84d4e84202d8085d546eee4d2840",
+      "origin": "user-edited PowerPoint, unmodified embedded image"
+    },
+    {
+      "file": "openocd.png",
+      "slide": 7,
+      "shape_index": 16,
+      "sha256": "0c3aff0ebb527bba56c4bfacd42c511306d16b795cdae24262e36e5e745e90fe",
+      "origin": "user-edited PowerPoint, unmodified embedded image"
+    },
+    {
+      "file": "gdb-fault.png",
+      "slide": 7,
+      "shape_index": 17,
+      "sha256": "649836154778a82e2f7fa93ecb2c88b0e70d2ef0435ee0bef23279c7838db136",
+      "origin": "user-edited PowerPoint, unmodified embedded image"
+    },
+    {
+      "file": "old-free-loop.png",
+      "slide": 8,
+      "shape_index": 16,
+      "sha256": "e18aa13273bdf63ef524ce94362e25cb9c5003b5be5686841ebbbd842ac9bc30",
+      "origin": "user-edited PowerPoint, unmodified embedded image"
+    },
+    {
+      "file": "gdb-heap-cycle.png",
+      "slide": 8,
+      "shape_index": 17,
+      "sha256": "4cedd787ba6d82495d8bd9cd4128acf268ee262ae545abdef42c6b9a19aa3fba",
+      "origin": "user-edited PowerPoint, unmodified embedded image"
+    },
+    {
+      "file": "device-info.png",
+      "slide": 12,
+      "shape_index": 16,
+      "sha256": "473b3f40fd83ecf7f7f41b72b98e693892209433d2cf4a3cedde6a491459f423",
+      "origin": "user-edited PowerPoint, unmodified embedded image"
+    },
+    {
+      "file": "network-status.png",
+      "slide": 12,
+      "shape_index": 17,
+      "sha256": "9ee19ee3fb056abed13321c4292847cc26b80e63ba327761bb4a274916bba3d2",
+      "origin": "user-edited PowerPoint, unmodified embedded image"
+    }
+  ]
+}

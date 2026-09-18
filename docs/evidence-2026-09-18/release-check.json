@@ -1,0 +1,38 @@
+{
+  "scope": "host static checks only; not a hardware acceptance test",
+  "configuration": {
+    "CONFIG_ARCH_BOARD": "\"esp32p4-function-ev-board\"",
+    "CONFIG_INIT_ENTRYPOINT": "\"nsh_main\"",
+    "CONFIG_INIT_STACKSIZE": "32768",
+    "CONFIG_SYSTEM_NSH_STACKSIZE": "32768",
+    "CONFIG_NSH_BUILTIN_AS_COMMAND": "y",
+    "CONFIG_MM_KERNEL_HEAP": "n",
+    "CONFIG_ESPRESSIF_SPIRAM_USER_HEAP": "n",
+    "CONFIG_SMARTFS_MAXNAMLEN": "16",
+    "CONFIG_SYSLOG_CONSOLE": "y"
+  },
+  "findings": [
+    {
+      "kind": "config_mismatch",
+      "key": "CONFIG_SMARTFS_MAXNAMLEN",
+      "actual": "16",
+      "defconfig": "48"
+    },
+    {
+      "kind": "execution_context",
+      "message": "Measure INIT task stack; SYSTEM_NSH_STACKSIZE alone is insufficient."
+    }
+  ],
+  "artifacts": {
+    "nuttx": {
+      "exists": true,
+      "bytes": 15176956,
+      "sha256": "69afcf7309798d6fe86572da92d733790f8454904eeddf979e3fcdbfe6eb5c54"
+    },
+    "nuttx.bin": {
+      "exists": true,
+      "bytes": 695176,
+      "sha256": "d8b6cdd16e46cc0a0cef14e6e94a5702bf6da6c4cada3000e93e6b8eeefabae7"
+    }
+  }
+}

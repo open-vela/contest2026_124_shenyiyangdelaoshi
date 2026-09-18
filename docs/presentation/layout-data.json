@@ -1,0 +1,2660 @@
+[
+  {
+    "title": "ESP32-P4 上的 openvela AI 设备诊断助手",
+    "seconds": 18,
+    "notes": "我们没有把目标停在系统启动或接入聊天接口，而是面向无屏开发板，把平台适配、系统可靠性与真实状态工具连成一个可演示的闭环。项目基于上游开源成果，不宣称首个 ESP32-P4 适配。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "作品介绍 / 新硬件适配 + AI 应用",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "ESP32-P4 上的 openvela AI 设备诊断助手",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "让模型读取真实设备状态，让一次问答可靠回到命令行。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "01",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.75,
+        "y": 2.85,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.9299999999999999,
+        "y": 2.85,
+        "w": 6.0200000000000005,
+        "h": 0.42,
+        "value": "从“能启动”走向“可诊断”",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.9299999999999999,
+        "y": 3.47,
+        "w": 6.0200000000000005,
+        "h": 1.15,
+        "value": "USB 控制台 · 有线联网 · 板端工具\nopenvela Agent · 云端模型 · NSH 返回",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 0.95,
+        "y": 5.32,
+        "w": 5.8,
+        "h": 0.8,
+        "value": "本项目贡献：板级集成、运行时修正、\n设备工具与可复用调试方法。",
+        "size": 18,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 7.7,
+        "y": 2.55,
+        "w": 4.85,
+        "h": 3.95,
+        "fill": "EDF2F3",
+        "stroke": "B3C7CC"
+      },
+      {
+        "kind": "text",
+        "x": 7.95,
+        "y": 2.8099999999999996,
+        "w": 4.35,
+        "h": 0.3,
+        "value": "截图位 01 / 待补实机画面",
+        "size": 12,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.95,
+        "y": 3.4499999999999997,
+        "w": 4.35,
+        "h": 0.85,
+        "value": "开发板实物与连接",
+        "size": 22,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.95,
+        "y": 4.51,
+        "w": 4.35,
+        "h": 1.83,
+        "value": "补图：ESP32-P4、USB 与网线。\n不用放 API Key 或配置截图。",
+        "size": 13,
+        "color": "50636C",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "相同芯片，交付深度可以不同",
+    "seconds": 20,
+    "notes": "其他开发者也在做 ESP32-P4 适配，因此不能仅以芯片型号体现差异。我们的增量是让设备状态可被模型读取，并解决实际运行中的栈、堆、TLS、时间和任务生命周期问题。这里比较的是交付层次，不评价其他参赛者。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "01 / 场景与差异化",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "相同芯片，交付深度可以不同",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "面向开发者的无屏设备诊断，不是通用聊天终端。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "02",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.7,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 2.7,
+        "w": 3.6199999999999997,
+        "h": 0.42,
+        "value": "基础：平台能运行",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 3.3200000000000003,
+        "w": 3.6199999999999997,
+        "h": 1.15,
+        "value": "启动 NSH\nUSB Console\n以太网与文件系统",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 4.9,
+        "y": 2.7,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 5.08,
+        "y": 2.7,
+        "w": 3.42,
+        "h": 0.42,
+        "value": "进阶：Agent 能执行",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 5.08,
+        "y": 3.3200000000000003,
+        "w": 3.42,
+        "h": 1.15,
+        "value": "查询真实堆与运行时间\n读取 eth0 状态\n通过 JSON 返回给模型",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 8.9,
+        "y": 2.7,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 9.08,
+        "y": 2.7,
+        "w": 3.4699999999999998,
+        "h": 0.42,
+        "value": "重点：过程可复现",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 9.08,
+        "y": 3.3200000000000003,
+        "w": 3.4699999999999998,
+        "h": 1.15,
+        "value": "异常寄存器与堆链表证据\n同步 ask 返回 NSH\n构建、配置与验收闭环",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 5.45,
+        "w": 11.7,
+        "h": 0.84,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 1.02,
+        "y": 5.66,
+        "w": 11.2,
+        "h": 0.43,
+        "value": "差异化来自“真实工具 + 运行可靠性 + 调试证据”，不是重复声明移植成功。",
+        "size": 19,
+        "color": "FFFFFF",
+        "bold": true
+      }
+    ]
+  },
+  {
+    "title": "保留上游归属，明确本项目增量",
+    "seconds": 20,
+    "notes": "NuttX 和 Espressif 提供芯片及驱动基础，openvela 提供 Agent、工具注册与模型调用框架。本项目工作是将它们在选定板卡上连通，并针对实机问题修正。正式提交还需要固定基线版本并附相关 PR 或提交记录。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "02 / 原创边界",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "保留上游归属，明确本项目增量",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "基于开源平台做工程集成与针对性改进，不将上游驱动或 Agent 引擎算作原创。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "03",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 2.58,
+        "w": 5.4,
+        "h": 0.4,
+        "value": "复用的基础",
+        "size": 22,
+        "color": "50636C",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 3.24,
+        "w": 5.35,
+        "h": 2.2,
+        "value": "NuttX / Espressif 的 ESP32-P4 基础\nopenvela ai_agent 与 ReAct 工具循环\ncJSON、mbedTLS、NTP 等组件\n已有板卡适配与社区工作",
+        "size": 18,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 6.35,
+        "y": 2.65,
+        "w": 0.018,
+        "h": 3.55,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 6.75,
+        "y": 2.58,
+        "w": 5.4,
+        "h": 0.4,
+        "value": "本项目实现 / 修正",
+        "size": 22,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 6.75,
+        "y": 3.24,
+        "w": 5.5,
+        "h": 2.7,
+        "value": "USB + EMAC + 存储的目标配置\ndevice_info / network_status 工具\nCLI 同步 ask 与资源生命周期\n栈 / 堆 / USB / TLS / 时间适配\n实机定位与验收流程",
+        "size": 18,
+        "color": "172B32",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "设备端执行，云端推理",
+    "seconds": 23,
+    "notes": "用户从 USB NSH 发起 ask。ESP32-P4 上的 openvela Agent 负责模型请求和工具调度，华为 MaaS 承担推理。本地工具读取系统 API 并输出 JSON，模型解释结果。问答结束后返回原 NSH。网络状态工具只报告接口配置，不等于主动测通外网。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "03 / 系统架构",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "设备端执行，云端推理",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "模型通过工具获取观测值，而不是仅根据提示词猜测设备状态。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "04",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.65,
+        "w": 2.85,
+        "h": 1.3,
+        "fill": "FFFFFF",
+        "stroke": "D9E2E5"
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 2.81,
+        "w": 2.5,
+        "h": 0.35,
+        "value": "USB / NSH",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 3.26,
+        "w": 2.6,
+        "h": 0.6,
+        "value": "用户输入\nai_agent ask",
+        "size": 14,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 3.85,
+        "y": 2.65,
+        "w": 3.25,
+        "h": 1.3,
+        "fill": "FFFFFF",
+        "stroke": "D9E2E5"
+      },
+      {
+        "kind": "text",
+        "x": 4.03,
+        "y": 2.81,
+        "w": 2.5,
+        "h": 0.35,
+        "value": "openvela Agent",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 4.03,
+        "y": 3.26,
+        "w": 2.6,
+        "h": 0.6,
+        "value": "同步请求\nReAct 工具调度",
+        "size": 14,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 8.6,
+        "y": 2.65,
+        "w": 2.85,
+        "h": 1.3,
+        "fill": "FFFFFF",
+        "stroke": "D9E2E5"
+      },
+      {
+        "kind": "text",
+        "x": 8.78,
+        "y": 2.81,
+        "w": 2.5,
+        "h": 0.35,
+        "value": "华为 MaaS",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 8.78,
+        "y": 3.26,
+        "w": 2.6,
+        "h": 0.6,
+        "value": "HTTPS / TLS 1.2\n云端模型推理",
+        "size": 14,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 3.66,
+        "y": 3.1,
+        "w": 0.19,
+        "h": 0.3,
+        "value": "→",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.3,
+        "y": 3.05,
+        "w": 1.1,
+        "h": 0.45,
+        "value": "← →",
+        "size": 23,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 5.2,
+        "y": 4.53,
+        "w": 1.0,
+        "h": 0.3,
+        "value": "↑ ↓",
+        "size": 16,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 3.0,
+        "y": 4.2,
+        "w": 8.4,
+        "h": 0.4,
+        "value": "请求 / 工具调用 / JSON 结果 / 自然语言解释",
+        "size": 16,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 3.85,
+        "y": 4.95,
+        "w": 7.6,
+        "h": 1.15,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 4.1,
+        "y": 5.14,
+        "w": 7.05,
+        "h": 0.34,
+        "value": "device_info       network_status",
+        "size": 21,
+        "color": "FFFFFF",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 4.1,
+        "y": 5.64,
+        "w": 7.05,
+        "h": 0.28,
+        "value": "uname / mallinfo / CLOCK_MONOTONIC / netlib",
+        "size": 15,
+        "color": "FFFFFF",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 5.13,
+        "w": 2.6,
+        "h": 0.75,
+        "value": "SmartFS /data\n配置与会话数据",
+        "size": 17,
+        "color": "172B32",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "两项工具，把语言连接到设备事实",
+    "seconds": 22,
+    "notes": "device_info 获取内核信息、运行时间、堆总量、使用量和最大空闲块。network_status 获取网口注册和运行状态、IP、掩码、网关与 MAC。数值来自板端 API。板卡和 OS 标签则是代码中的声明，不单独作为 openvela 来源证明。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "04 / 本项目工具扩展",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "两项工具，把语言连接到设备事实",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "不依赖额外传感器，以板卡已有的系统资源和以太网作为可验证输入。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "05",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.65,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 2.65,
+        "w": 5.42,
+        "h": 0.42,
+        "value": "device_info",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 3.27,
+        "w": 5.42,
+        "h": 1.15,
+        "value": "内核 / 架构 / 运行时间\n堆总量、已用、空闲、最大空闲块\n结构化 JSON，便于核对和解释",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 6.8,
+        "y": 2.65,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 6.9799999999999995,
+        "y": 2.65,
+        "w": 5.42,
+        "h": 0.42,
+        "value": "network_status",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 6.9799999999999995,
+        "y": 3.27,
+        "w": 5.42,
+        "h": 1.15,
+        "value": "eth0 注册、UP、RUNNING 状态\nIPv4、网关、掩码、MAC\n缺失字段返回 null，而非虚构数据",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 1.0,
+        "y": 5.4,
+        "w": 11.2,
+        "h": 0.85,
+        "value": "能力边界：接口“已配置”不代表外网可达；本工具不测 DNS、丢包或链路速率。\n演示时用 ifconfig / free 对照，证明回答有设备数据依据。",
+        "size": 17,
+        "color": "50636C",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "现场演示：一次问答完成一次诊断",
+    "seconds": 28,
+    "notes": "这里替换为真实录屏片段或截图。先执行 ifconfig 和 free，再发起工具问答，最后显示 nsh 提示符和第二次 free。若精简日志不显示工具调用，不要把自然语言回答当作调用证据，可补已有调试记录或另附工具链路证明。任何截图都要来自实机。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "05 / 演示主画面",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "现场演示：一次问答完成一次诊断",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "建议提问：请调用 device_info 和 network_status，概括设备内存与网络配置。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "06",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.55,
+        "w": 7.9,
+        "h": 3.97,
+        "fill": "EDF2F3",
+        "stroke": "B3C7CC"
+      },
+      {
+        "kind": "text",
+        "x": 1.05,
+        "y": 2.8099999999999996,
+        "w": 7.4,
+        "h": 0.3,
+        "value": "截图位 02 / 待补实机画面",
+        "size": 12,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 1.05,
+        "y": 3.4499999999999997,
+        "w": 7.4,
+        "h": 0.85,
+        "value": "工具问答与 NSH 返回",
+        "size": 22,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 1.05,
+        "y": 4.51,
+        "w": 7.4,
+        "h": 1.85,
+        "value": "补图：提问、设备状态回答、nsh>。\n同时保留工具调用证据；严禁用模拟输出冒充。",
+        "size": 13,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 9.05,
+        "y": 2.8,
+        "w": 3.3,
+        "h": 0.4,
+        "value": "三个观察点",
+        "size": 22,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 9.05,
+        "y": 3.55,
+        "w": 3.3,
+        "h": 2.3,
+        "value": "01  数据能与命令核对\n\n02  回答后回到 NSH\n\n03  可继续执行下一条命令",
+        "size": 18,
+        "color": "172B32",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "不是泛泛“死机”：定位实际任务栈",
+    "seconds": 25,
+    "notes": "set_llm 曾多次卡住。GDB 显示 getumask 处访问地址 0x3e，任务信息受到破坏。追踪发现 builtin 在 NSH 当前任务运行，启动栈使用 INIT_STACKSIZE，而不是已配置为 32KB 的 SYSTEM_NSH_STACKSIZE。实际启动栈仍为 2KB。修正后 ps 观测峰值 3572 字节，超过旧栈容量，命令也能返回。这是栈不足的重要证据，不是对所有历史故障的一概归因。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "06 / 深度工程案例 A",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "不是泛泛“死机”：定位实际任务栈",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "配置名相似并不代表作用于同一个任务；必须回到真实执行路径。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "07",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.6,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 2.6,
+        "w": 5.87,
+        "h": 0.42,
+        "value": "现象 → 证据 → 修正",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 3.22,
+        "w": 5.87,
+        "h": 1.15,
+        "value": "set_llm 卡住；getumask 访问异常\nINIT 栈实际 2 KB，不是预期 32 KB\n调整真实启动栈，启用栈着色验证",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 1.0,
+        "y": 5.3,
+        "w": 5.6,
+        "h": 0.85,
+        "value": "实机 ps：NSH 栈峰值 3572 B\n超过旧 2048 B 配置。",
+        "size": 21,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 7.4,
+        "y": 2.55,
+        "w": 5.15,
+        "h": 3.97,
+        "fill": "EDF2F3",
+        "stroke": "B3C7CC"
+      },
+      {
+        "kind": "text",
+        "x": 7.65,
+        "y": 2.8099999999999996,
+        "w": 4.65,
+        "h": 0.3,
+        "value": "截图位 03 / 待补实机画面",
+        "size": 12,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.65,
+        "y": 3.4499999999999997,
+        "w": 4.65,
+        "h": 0.85,
+        "value": "GDB 异常 + ps 栈证据",
+        "size": 22,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.65,
+        "y": 4.51,
+        "w": 4.65,
+        "h": 1.85,
+        "value": "补图：mepc / mtval 与修正后的 ps。\n可分为上下两张，保留关键数值。",
+        "size": 13,
+        "color": "50636C",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "free 无限打印，根因在堆布局",
+    "seconds": 25,
+    "notes": "free 反复打印同一行。GDB 直接证实 procfs 的 Umem 节点 next 指向自身。检查板级堆分配发现，在当时配置下独立内核堆和用户堆落到同一片 SRAM。flat 模式改为共享分配器并全量重编译，用户确认 free 恢复。现场链表证据与板级代码一起说明了问题，而不是仅凭最后一条日志猜测。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "07 / 深度工程案例 B",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "free 无限打印，根因在堆布局",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "不在显示层截断输出，而是修正内存分配器初始化配置。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "08",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.6,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 2.6,
+        "w": 5.82,
+        "h": 0.42,
+        "value": "链表自环 → 重叠堆 → 共享分配器",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 3.22,
+        "w": 5.82,
+        "h": 1.15,
+        "value": "GDB：g_procfs_meminfo->next 指向自己\n检查 heap / kheap 返回的 SRAM 区域\n关闭独立内核堆，完整重编译",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 1.0,
+        "y": 5.32,
+        "w": 5.7,
+        "h": 0.8,
+        "value": "结果：实机反馈 free 恢复。\n避免以“断开链表”掩盖内存损坏。",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 7.4,
+        "y": 2.55,
+        "w": 5.15,
+        "h": 3.97,
+        "fill": "EDF2F3",
+        "stroke": "B3C7CC"
+      },
+      {
+        "kind": "text",
+        "x": 7.65,
+        "y": 2.8099999999999996,
+        "w": 4.65,
+        "h": 0.3,
+        "value": "截图位 04 / 待补实机画面",
+        "size": 12,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.65,
+        "y": 3.4499999999999997,
+        "w": 4.65,
+        "h": 0.85,
+        "value": "自环证据 + 正常 free",
+        "size": 22,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.65,
+        "y": 4.51,
+        "w": 4.65,
+        "h": 1.85,
+        "value": "补图：next == self 为 1 的 GDB 记录，\n以及修正后只输出一次并返回 NSH。",
+        "size": 13,
+        "color": "50636C",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "跨层适配，让云端请求真正跑通",
+    "seconds": 24,
+    "notes": "USB 软件队列扩大并统一日志输出路径。TLS 启用实际服务端需要的 ECDHE 套件并清理重建库。NTP 提供真实日期，耗时使用单调时钟，避免校时导致超时判断跳变。SmartFS 的短文件名修复已编译，还要进行最终板端回归。TLS 握手成功不代表证书安全已经产品化。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "08 / 集成工作量",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "跨层适配，让云端请求真正跑通",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "解决的不是单一 API，而是输入、存储、网络、安全传输和时间的一组约束。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "09",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.65,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 2.65,
+        "w": 5.5200000000000005,
+        "h": 0.42,
+        "value": "USB 与文件系统",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 3.27,
+        "w": 5.5200000000000005,
+        "h": 1.15,
+        "value": "USB RX/TX 环形队列 64 → 2048 B\n统一正常日志与控制台输出路径\nSmartFS 短名称兼容与写入错误检查",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 6.9,
+        "y": 2.65,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 7.08,
+        "y": 2.65,
+        "w": 5.42,
+        "h": 0.42,
+        "value": "TLS 与时间",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.08,
+        "y": 3.27,
+        "w": 5.42,
+        "h": 1.15,
+        "value": "启用 ECDHE，清理重建依赖归档\nNTP 校时，不再强设固定日期\nCLOCK_MONOTONIC 统计请求耗时",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 1,
+        "y": 5.44,
+        "w": 11.3,
+        "h": 0.85,
+        "value": "已有实机握手：TLSv1.2 / TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384\n边界：证书校验仍为 VERIFY_OPTIONAL，尚未完成生产安全配置。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "一次 ask，一次可结束的工作单元",
+    "seconds": 22,
+    "notes": "原来问答后看见 vela 提示符，却不能继续输入。现在 CLI ask 走同步 ReAct 路径，首次初始化核心组件，后续复用状态，结束后释放本次请求缓冲并回到 NSH。不启动 CLI 不需要的 cron、heartbeat 和 WebSocket 后台服务。这里是运行方式的针对性改进，不宣称重新发明 Agent。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "09 / 面向无屏板卡的运行方式",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "一次 ask，一次可结束的工作单元",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "同步执行、复用核心状态、释放请求缓冲区；避免把命令行变成假交互界面。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "10",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.85,
+        "y": 2.68,
+        "w": 2,
+        "h": 0.72,
+        "value": "01",
+        "size": 36,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.85,
+        "y": 3.75,
+        "w": 3.4,
+        "h": 0.42,
+        "value": "进入",
+        "size": 23,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.85,
+        "y": 4.46,
+        "w": 3.5,
+        "h": 1.15,
+        "value": "NSH 发起 ask\n首次完成核心初始化",
+        "size": 17,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 4.95,
+        "y": 2.68,
+        "w": 2,
+        "h": 0.72,
+        "value": "02",
+        "size": 36,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 4.95,
+        "y": 3.75,
+        "w": 3.4,
+        "h": 0.42,
+        "value": "执行",
+        "size": 23,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 4.95,
+        "y": 4.46,
+        "w": 3.5,
+        "h": 1.15,
+        "value": "复用 ReAct 循环\n模型请求与工具执行",
+        "size": 17,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 9.0,
+        "y": 2.68,
+        "w": 2,
+        "h": 0.72,
+        "value": "03",
+        "size": 36,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 9.0,
+        "y": 3.75,
+        "w": 3.4,
+        "h": 0.42,
+        "value": "返回",
+        "size": 23,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 9.0,
+        "y": 4.46,
+        "w": 3.5,
+        "h": 1.15,
+        "value": "释放请求缓冲\n输出一次并返回 NSH",
+        "size": 17,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 6.08,
+        "w": 11.4,
+        "h": 0.45,
+        "value": "取舍：此模式不提供常驻提醒与 WebSocket 服务；验证重点是连续请求和资源稳定性。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "AI 协作不是替代验证，而是加快验证",
+    "seconds": 20,
+    "notes": "这个项目经过多轮失败和定位。AI 帮助跨仓检索、生成补丁与整理假设，但最终判断依据是实机和调试器。准备把经验沉淀为开发电脑上的 bringup-debug Skill，包含前置条件、操作步骤与验收标准。当前 Skill 和日志提交还在整理，不能把板端自带 Skill 当成自己的开发成果。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "10 / 开发过程与可复用成果",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "AI 协作不是替代验证，而是加快验证",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "需求拆解 → 代码建议 → 构建 → 实机反馈 → GDB 证据 → 定点修正。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "11",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.62,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 2.62,
+        "w": 5.720000000000001,
+        "h": 0.42,
+        "value": "已发生的协作工作",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.98,
+        "y": 3.24,
+        "w": 5.720000000000001,
+        "h": 1.15,
+        "value": "跨仓配置与代码核对\n分析串口日志、异常寄存器和链表\n将修正编译后交由板端验证",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 6.9,
+        "y": 2.62,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 7.08,
+        "y": 2.62,
+        "w": 5.42,
+        "h": 0.42,
+        "value": "待归集的开发 Skill",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.08,
+        "y": 3.24,
+        "w": 5.42,
+        "h": 1.15,
+        "value": "版本与 ELF 一致性检查\n栈 / 堆 / USB / TLS 排障路径\n每一步的验收条件与失败分支",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 1,
+        "y": 5.42,
+        "w": 11.2,
+        "h": 0.85,
+        "value": "工作量快照：3 个仓库、30 个已跟踪文件存在未提交改动，另有新配置与工具文件。\n这是当前工程覆盖范围，不是原创代码量，也不包括全部历史工作。",
+        "size": 16,
+        "color": "50636C",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "用可核对的证据结束演示",
+    "seconds": 25,
+    "notes": "已有用户实机日志证明 DHCP 获取地址，网关和公网域名各十次 ping 都收到响应，华为 MaaS TLS 和问答跑通，free 和日期恢复。这些是单次功能验证，不是压力测试。明天补录工具回答与命令输出对照、冷启动与连续请求。最新短文件名修复和构建配置一致性也需要验收。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "11 / 验证结果与当前边界",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "用可核对的证据结束演示",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "展示已验证结果；把发布前补测项明确留在清单中。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "12",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 0.8,
+        "y": 2.55,
+        "w": 6.1,
+        "h": 3.97,
+        "fill": "EDF2F3",
+        "stroke": "B3C7CC"
+      },
+      {
+        "kind": "text",
+        "x": 1.05,
+        "y": 2.8099999999999996,
+        "w": 5.6,
+        "h": 0.3,
+        "value": "截图位 05 / 待补实机画面",
+        "size": 12,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 1.05,
+        "y": 3.4499999999999997,
+        "w": 5.6,
+        "h": 0.85,
+        "value": "网络 / 时间 / 连续请求",
+        "size": 22,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 1.05,
+        "y": 4.51,
+        "w": 5.6,
+        "h": 1.85,
+        "value": "补图：ifconfig、date、两次 ask、free。\n可用已有 ping 记录作辅证，不宣称长期零丢包。",
+        "size": 13,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 7.25,
+        "y": 2.7,
+        "w": 5.0,
+        "h": 0.4,
+        "value": "已有实机反馈",
+        "size": 21,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.25,
+        "y": 3.31,
+        "w": 5.0,
+        "h": 1.28,
+        "value": "DHCP、局域网 / 公网 ping\nTLS 与问答、NSH 返回\nfree、日期恢复正常",
+        "size": 17,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 7.25,
+        "y": 4.99,
+        "w": 5.0,
+        "h": 0.4,
+        "value": "最终补测",
+        "size": 21,
+        "color": "B64637",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 7.25,
+        "y": 5.6,
+        "w": 5.0,
+        "h": 0.8,
+        "value": "新文件名、配置对齐、重启持久化\n连续请求资源变化、工具调用证据",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "交付的不只是启动画面",
+    "seconds": 15,
+    "notes": "项目的独特工作有三点：把设备真实状态接入 Agent，完成面向无屏板卡的同步问答链路，以及用异常和内存证据解决影响可靠性的移植问题。我们尊重上游成果，提交自己的增量代码、验证材料与可复用经验。下一步重点是发布验收和安全完善，不是堆叠未经验证的功能。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "12 / 总结",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "交付的不只是启动画面",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "把一个能跑的板卡，推进为能读取状态、能解释结果、能继续操作的 AI 终端。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "13",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "box",
+        "x": 1,
+        "y": 2.83,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 1.18,
+        "y": 2.83,
+        "w": 3.32,
+        "h": 0.42,
+        "value": "真实",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 1.18,
+        "y": 3.45,
+        "w": 3.32,
+        "h": 1.15,
+        "value": "板端 API → JSON\n模型基于观测值解释",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 5.0,
+        "y": 2.83,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 5.18,
+        "y": 2.83,
+        "w": 3.32,
+        "h": 0.42,
+        "value": "可控",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 5.18,
+        "y": 3.45,
+        "w": 3.32,
+        "h": 1.15,
+        "value": "ask 结束返回 NSH\n不依赖额外外设",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 9.0,
+        "y": 2.83,
+        "w": 0.055,
+        "h": 0.37,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 9.18,
+        "y": 2.83,
+        "w": 3.32,
+        "h": 0.42,
+        "value": "可追溯",
+        "size": 19,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 9.18,
+        "y": 3.45,
+        "w": 3.32,
+        "h": 1.15,
+        "value": "故障证据对应修正\n代码与测试边界清楚",
+        "size": 16,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 1.15,
+        "y": 5.78,
+        "w": 11.0,
+        "h": 0.5,
+        "value": "项目仓库：zealsoftstudio / contest2026_124_shenyiyangdelaoshi",
+        "size": 17,
+        "color": "007F78",
+        "bold": true
+      }
+    ]
+  },
+  {
+    "title": "附录：核心改动如何定位",
+    "seconds": 0,
+    "notes": "用于评委追问时定位代码，不纳入主视频。当前基线加工作区改动并非最终发布提交。详细路径与哈希见介绍文档。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "APPENDIX A / 答辩备用，不计入视频",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "附录：核心改动如何定位",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "以下为代码导航。最终提交需要补齐基线、跨仓 PR 与正式发布记录。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "14",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 2.6,
+        "w": 2.5,
+        "h": 0.4,
+        "value": "目标配置 / 启动",
+        "size": 16,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 3.4,
+        "y": 2.6,
+        "w": 9.0,
+        "h": 0.4,
+        "value": "nuttx: configs/usbnet/defconfig、esp32p4_bringup.c",
+        "size": 15,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 3.18,
+        "w": 2.5,
+        "h": 0.4,
+        "value": "USB / 存储",
+        "size": 16,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 3.4,
+        "y": 3.18,
+        "w": 9.0,
+        "h": 0.4,
+        "value": "nuttx: esp_usbserial.c、esp_board_spiflash.c",
+        "size": 15,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 3.76,
+        "w": 2.5,
+        "h": 0.4,
+        "value": "DHCP 初始化",
+        "size": 16,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 3.4,
+        "y": 3.76,
+        "w": 9.0,
+        "h": 0.4,
+        "value": "apps: netutils/netinit/Kconfig、netinit.c",
+        "size": 15,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 4.34,
+        "w": 2.5,
+        "h": 0.4,
+        "value": "同步 Agent",
+        "size": 16,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 3.4,
+        "y": 4.34,
+        "w": 9.0,
+        "h": 0.4,
+        "value": "ai_agent: agent_main.c、core/agent_loop.c",
+        "size": 15,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 4.92,
+        "w": 2.5,
+        "h": 0.4,
+        "value": "设备工具",
+        "size": 16,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 3.4,
+        "y": 4.92,
+        "w": 9.0,
+        "h": 0.4,
+        "value": "ai_agent: tools/tool_esp32p4.c、tool_registry.c",
+        "size": 15,
+        "color": "172B32",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 0.9,
+        "y": 5.5,
+        "w": 2.5,
+        "h": 0.4,
+        "value": "时间 / 文件名",
+        "size": 16,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 3.4,
+        "y": 5.5,
+        "w": 9.0,
+        "h": 0.4,
+        "value": "ai_agent: core/agent_trace.c、tools/skill_loader.c",
+        "size": 15,
+        "color": "172B32",
+        "bold": false
+      }
+    ]
+  },
+  {
+    "title": "附录：发布前须如实说明的限制",
+    "seconds": 0,
+    "notes": "当前依赖公网模型，不能离线推理；工具不能主动证明互联网可达；TLS 证书校验未产品化；PSRAM 没有作为用户堆。当前 .config 与 defconfig 的 SmartFS 名称长度不同，应对齐后复验，不要随意改变已格式化数据区。开发 Skill、日志和上游 PR 属于交付整理工作，尚不能声称完成。",
+    "items": [
+      {
+        "kind": "box",
+        "x": 0,
+        "y": 0,
+        "w": 13.333333,
+        "h": 7.5,
+        "fill": "F7F9FA",
+        "stroke": null
+      },
+      {
+        "kind": "box",
+        "x": 0.48,
+        "y": 0.4,
+        "w": 0.1,
+        "h": 0.3,
+        "fill": "007F78",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 0.4,
+        "w": 11.8,
+        "h": 0.3,
+        "value": "APPENDIX B / 答辩备用，不计入视频",
+        "size": 11,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.7,
+        "y": 0.98,
+        "w": 11.9,
+        "h": 0.68,
+        "value": "附录：发布前须如实说明的限制",
+        "size": 29,
+        "color": "172B32",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 1.78,
+        "w": 11.85,
+        "h": 0.58,
+        "value": "把限制说清楚，比用未经验证的功能充数更有说服力。",
+        "size": 15,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "box",
+        "x": 0.7,
+        "y": 6.98,
+        "w": 11.9,
+        "h": 0.014,
+        "fill": "D9E2E5",
+        "stroke": null
+      },
+      {
+        "kind": "text",
+        "x": 0.72,
+        "y": 7.12,
+        "w": 10.9,
+        "h": 0.18,
+        "value": "OPENVELA / ESP32-P4   ·   队伍 124 神一样的老师   ·   2026.09.16",
+        "size": 9,
+        "color": "50636C",
+        "bold": false
+      },
+      {
+        "kind": "text",
+        "x": 12.0,
+        "y": 7.1,
+        "w": 0.6,
+        "h": 0.2,
+        "value": "15",
+        "size": 10,
+        "color": "007F78",
+        "bold": true
+      },
+      {
+        "kind": "text",
+        "x": 1,
+        "y": 2.65,
+        "w": 11.2,
+        "h": 3.5,
+        "value": "01  依赖云端模型和网络；天气、搜索密钥未配置。\n02  CLI ask 不运行后台 cron / heartbeat / WebSocket。\n03  TLS VERIFY_OPTIONAL 尚未完成生产级证书验证。\n04  PSRAM 未作为用户堆；不宣称已支持所有硬件外设。\n05  SmartFS：当前 .config 为 16，defconfig 为 48，发布前需对齐复验。\n06  新短文件名、连续请求与干净构建仍需最终验收。",
+        "size": 19,
+        "color": "172B32",
+        "bold": false
+      }
+    ]
+  }
+]
