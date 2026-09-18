@@ -1,0 +1,1230 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f1b6b4a..5104c7a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -37,7 +37,6 @@ if(CONFIG_EXAMPLES_AI_AGENT_VELA)
+     src/infra/heartbeat.c
+     src/channels/nsh_commands.c
+     src/channels/cmd_llm.c
+-    src/channels/cmd_voice.c
+     src/channels/cmd_channel.c
+     src/channels/ws_server.c
+     src/tools/tool_registry.c
+@@ -53,23 +52,36 @@ if(CONFIG_EXAMPLES_AI_AGENT_VELA)
+     src/tools/tool_system.c
+     src/tools/tool_health.c
+     src/tools/tool_control.c
+-    src/tools/tool_media.c
+     src/tools/tool_proxyquickapp.c
+     src/tools/skill_loader.c
+     src/tools/tool_guard.c
+     src/tools/tool_amap.c
+-    src/voice/volc_tts.c
+-    src/voice/volc_tts_ws.c
+-    src/voice/volc_asr.c
+-    src/voice/voice_tts.c
+-    src/voice/voice_asr.c
+-    src/voice/audio_capture.c
+-    src/voice/audio_playback.c
+-    src/voice/voice_channel.c
+     src/stubs.c
+     src/ui/qrcode_display.c
+   )
+ 
++  if(CONFIG_AI_AGENT_VOICE)
++    list(APPEND AGENT_SRCS
++      src/channels/cmd_voice.c
++      src/voice/volc_tts.c
++      src/voice/volc_tts_ws.c
++      src/voice/volc_asr.c
++      src/voice/voice_tts.c
++      src/voice/voice_asr.c
++      src/voice/audio_capture.c
++      src/voice/audio_playback.c
++      src/voice/voice_channel.c
++    )
++  endif()
++
++  if(CONFIG_AI_AGENT_MEDIA)
++    list(APPEND AGENT_SRCS src/tools/tool_media.c)
++  endif()
++
++  if(CONFIG_AI_AGENT_ESP32P4_TOOLS)
++    list(APPEND AGENT_SRCS src/tools/tool_esp32p4.c)
++  endif()
++
+   # Optional modules
+   if(CONFIG_AI_AGENT_FEISHU)
+     list(APPEND AGENT_SRCS
+diff --git a/Kconfig b/Kconfig
+index 84628d8..97b46e7 100644
+--- a/Kconfig
++++ b/Kconfig
+@@ -172,6 +172,28 @@ config AI_AGENT_CAMERA
+ 		camera device at /dev/video0. Use for object recognition,
+ 		text reading, and scene description.
+ 
++config AI_AGENT_MEDIA
++	bool "Enable media playback tools"
++	default y
++	---help---
++		Enable music search and playback tools. Disable this for CLI-only
++		boards that do not include the openvela multimedia framework.
++
++config AI_AGENT_VOICE
++	bool "Enable voice channel"
++	default y
++	---help---
++		Enable audio capture, playback, ASR, and TTS. Disable this for
++		CLI-only boards without audio and multimedia frameworks.
++
++config AI_AGENT_ESP32P4_TOOLS
++	bool "Enable ESP32-P4 device information tools"
++	default y if ARCH_CHIP_ESP32P4
++	depends on ARCH_CHIP_ESP32P4 && NET && NET_IPv4
++	---help---
++		Enable the read-only device_info and network_status Agent tools for
++		the ESP32-P4 Function EV Board.
++
+ config AI_AGENT_NODE
+ 	bool "Enable Hub-Node cross-device protocol"
+ 	default y
+diff --git a/Makefile b/Makefile
+index 1dfc116..fea15f1 100644
+--- a/Makefile
++++ b/Makefile
+@@ -72,8 +72,13 @@ CSRCS += src/tools/tool_vision.c
+ CSRCS += src/tools/tool_shell.c
+ CSRCS += src/tools/tool_system.c
+ CSRCS += src/tools/tool_health.c
++ifeq ($(CONFIG_AI_AGENT_ESP32P4_TOOLS),y)
++CSRCS += src/tools/tool_esp32p4.c
++endif
+ CSRCS += src/tools/tool_control.c
++ifeq ($(CONFIG_AI_AGENT_MEDIA),y)
+ CSRCS += src/tools/tool_media.c
++endif
+ CSRCS += src/tools/tool_proxyquickapp.c
+ ifeq ($(CONFIG_AI_AGENT_MCP),y)
+ CSRCS += src/tools/mcp_bridge.c
+@@ -115,6 +120,7 @@ endif
+ CSRCS += src/channels/ws_server.c
+ 
+ # voice/ - 语音管线
++ifeq ($(CONFIG_AI_AGENT_VOICE),y)
+ CSRCS += src/voice/voice_channel.c
+ CSRCS += src/voice/voice_tts.c
+ CSRCS += src/voice/voice_asr.c
+@@ -123,6 +129,7 @@ CSRCS += src/voice/volc_tts_ws.c
+ CSRCS += src/voice/volc_asr.c
+ CSRCS += src/voice/audio_capture.c
+ CSRCS += src/voice/audio_playback.c
++endif
+ 
+ # infra/ - 基础设施
+ CSRCS += src/infra/config_store.c
+diff --git a/src/agent_main.c b/src/agent_main.c
+index 9d676c2..7e83688 100644
+--- a/src/agent_main.c
++++ b/src/agent_main.c
+@@ -21,6 +21,7 @@
+  */
+ 
+ #include <malloc.h>
++#include <fcntl.h>
+ #include <pthread.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -30,6 +31,9 @@
+ #include <sys/mount.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
++#ifdef CONFIG_NETUTILS_NTPCLIENT
++#include <netutils/ntpclient.h>
++#endif
+ 
+ #include "agent_compat.h"
+ #include "agent_config.h"
+@@ -60,7 +64,9 @@
+ #include "infra/http_proxy.h"
+ #include "tools/tool_guard.h"
+ #include "tools/skill_loader.h"
++#ifdef CONFIG_AI_AGENT_MEDIA
+ #include "tools/tool_media.h"
++#endif
+ #include "tools/tool_registry.h"
+ #ifdef CONFIG_AI_AGENT_MCP
+ #include "tools/mcp_bridge.h"
+@@ -70,7 +76,9 @@
+ #if AGENT_SKILL_SYNC_ENABLED
+ #include "tools/skill_sync.h"
+ #endif
++#ifdef CONFIG_AI_AGENT_VOICE
+ #include "voice/voice_channel.h"
++#endif
+ #ifdef CONFIG_AI_AGENT_WEIXIN
+ #include "channels/weixin_channel.h"
+ #endif
+@@ -324,8 +332,10 @@ static void quickapp_mq_dispatch(const char *chat_id, const char *content)
+ 
+ /* ── Voice failure cooldown — prevent error-message cascade ──── */
+ 
++#ifdef CONFIG_AI_AGENT_VOICE
+ static volatile bool s_voice_cooldown;
+ static time_t s_voice_cooldown_until;
++#endif
+ 
+ /**
+  * Reads messages from the outbound queue and dispatches them to the
+@@ -383,7 +393,9 @@ static void* outbound_dispatch_task(void* arg)
+         } else if (strcmp(msg.channel, AGENT_CHAN_MQTT) == 0) {
+             mqtt_channel_send(msg.chat_id, msg.content);
+ #endif
+-        } else if (strcmp(msg.channel, AGENT_CHAN_VOICE) == 0) {
++        }
++#ifdef CONFIG_AI_AGENT_VOICE
++        else if (strcmp(msg.channel, AGENT_CHAN_VOICE) == 0) {
+             /* Check voice cooldown — skip voice dispatch if a recent
+              * speak call failed, to prevent error-message cascade. */
+             if (s_voice_cooldown && time(NULL) < s_voice_cooldown_until) {
+@@ -398,15 +410,18 @@ static void* outbound_dispatch_task(void* arg)
+                     s_voice_cooldown_until = time(NULL) + 5;
+                 }
+             }
++        }
++#endif
+ #ifdef CONFIG_AI_AGENT_LVGL_UI
+-        } else if (strcmp(msg.channel, AGENT_CHAN_LVGL_UI) == 0) {
++        else if (strcmp(msg.channel, AGENT_CHAN_LVGL_UI) == 0) {
+             int uret = lvgl_ui_channel_send(msg.content);
+             if (uret != 0) {
+                 syslog(LOG_ERR, "[%s] lvgl_ui_channel_send failed: %d\n", TAG, uret);
+             }
++        }
+ #endif
+ #ifdef CONFIG_AI_AGENT_WEIXIN
+-        } else if (strcmp(msg.channel, AGENT_CHAN_WEIXIN) == 0) {
++        else if (strcmp(msg.channel, AGENT_CHAN_WEIXIN) == 0) {
+             /* chat_id format: "from_user_id|context_token" */
+             char uid[64] = "";
+             const char* ctx = "";
+@@ -422,19 +437,16 @@ static void* outbound_dispatch_task(void* arg)
+                 strncpy(uid, msg.chat_id, sizeof(uid) - 1);
+             }
+             weixin_channel_send(uid, ctx, msg.content);
++        }
+ #endif
+-        } else if (strcmp(msg.channel, AGENT_CHAN_SYSTEM) == 0) {
++        else if (strcmp(msg.channel, AGENT_CHAN_SYSTEM) == 0) {
+             syslog(LOG_INFO, "[%s] System message [%s]: %.128s\n", TAG, msg.chat_id, msg.content);
+ #ifdef CONFIG_FEATURE_SYSTEM_VELACLAW
+         } else if (strcmp(msg.channel, AGENT_CHAN_QUICKAPP) == 0) {
+             quickapp_mq_dispatch(msg.chat_id, msg.content);
+ #endif
+         } else if (strcmp(msg.channel, "cli") == 0) {
+-            pthread_mutex_lock(&g_stdout_lock);
+-            printf("\n[Agent]: %s\nvela> ", msg.content);
+-            fflush(stdout);
+-            pthread_mutex_unlock(&g_stdout_lock);
+-            syslog(LOG_INFO, "[agent] [Agent]: %s\n", msg.content);
++            dprintf(STDOUT_FILENO, "\n[Agent]: %s\n", msg.content);
+         } else {
+             syslog(LOG_WARNING, "[%s] Unknown channel: %s\n", TAG, msg.channel);
+         }
+@@ -464,10 +476,60 @@ static inline long boot_ms(struct timespec* t0)
+     syslog((rc) == OK ? LOG_INFO : LOG_WARNING, \
+         "[%s] [boot +%ldms] " phase ": " msg " (rc=%d)\n", TAG, boot_ms(t0), (rc))
+ 
++static bool s_cli_ready;
++
++static int cli_ask(int argc, char **argv)
++{
++    char content[1024] = {0};
++    if (argc < 3) {
++        dprintf(STDOUT_FILENO, "Usage: ai_agent ask <message>\n");
++        return ERROR;
++    }
++    for (int i = 2; i < argc; i++) {
++        if (strlen(content) + strlen(argv[i]) + (i > 2) >= sizeof(content)) {
++            dprintf(STDOUT_FILENO, "Agent message too long.\n");
++            return ERROR;
++        }
++        if (i > 2) strcat(content, " ");
++        strcat(content, argv[i]);
++    }
++    if (time(NULL) < 1735689600) {
++#ifdef CONFIG_NETUTILS_NTPCLIENT
++        static bool ntp_started;
++        if (!ntp_started) ntp_started = ntpc_start() >= 0;
++        for (int i = 0; ntp_started && i < 15 && time(NULL) < 1735689600; i++) {
++            sleep(1);
++        }
++#endif
++        if (time(NULL) < 1735689600) {
++            dprintf(STDOUT_FILENO,
++                "Clock not synchronized. Check network/NTP or set date, then retry.\n");
++            return ERROR;
++        }
++    }
++    return agent_loop_ask(content);
++}
++
+ int ai_agent_main(int argc, char* argv[])
+ {
+-    (void)argc;
+-    (void)argv;
++    if (argc > 1 && strcmp(argv[1], "ask") == 0) {
++        if (argc < 3 || s_cli_ready) return cli_ask(argc, argv);
++    }
++    /* Configuration commands do not require Agent services or threads. */
++    if (argc > 1 && (strcmp(argv[1], "config_show") == 0 ||
++                     strcmp(argv[1], "set_llm") == 0)) {
++        int rc = config_store_init();
++        if (rc == OK && strcmp(argv[1], "set_llm") == 0) {
++            rc = llm_proxy_init();
++            if (rc == OK) {
++                rc = llm_router_init();
++            }
++        }
++        if (rc == OK) {
++            rc = nsh_commands_run_once(argc - 1, &argv[1]);
++        }
++        return rc;
++    }
+ 
+     g_shutdown_requested = false;
+ 
+@@ -490,10 +552,22 @@ int ai_agent_main(int argc, char* argv[])
+     /* ── Phase 0: Storage Bootstrapping (Auto-mount & Mkdir) ── */
+ 
+     struct stat st;
++#ifdef CONFIG_ARCH_SIM
+     if (stat("/data", &st) != 0) {
++        mkdir("/data", 0755);
+         syslog(LOG_INFO, "[%s] Mounting /data as tmpfs for simulation...\n", TAG);
+-        mount(NULL, "/data", "tmpfs", 0, NULL);
++        if (mount(NULL, "/data", "tmpfs", 0, NULL) < 0) {
++            syslog(LOG_ERR, "[%s] Cannot mount simulation storage, errno=%d\n",
++                TAG, errno);
++            return ERROR;
++        }
++    }
++#else
++    if (stat("/data", &st) != 0 || !S_ISDIR(st.st_mode)) {
++        syslog(LOG_ERR, "[%s] Persistent storage /data is not mounted\n", TAG);
++        return ERROR;
+     }
++#endif
+ 
+     /* Ensure directory structure exists (No more manual mkdir needed!) */
+     mkdir("/data/agent", 0755);
+@@ -585,8 +659,10 @@ int ai_agent_main(int argc, char* argv[])
+         BOOT_LOG_RC(&t0, "P3", "mqtt_channel_init", rc);
+ #endif
+ 
++#ifdef CONFIG_AI_AGENT_VOICE
+         rc = voice_channel_init();
+         BOOT_LOG_RC(&t0, "P3", "voice_channel_init", rc);
++#endif
+ 
+ #ifdef CONFIG_AI_AGENT_WEIXIN
+         rc = weixin_channel_init();
+@@ -605,6 +681,18 @@ int ai_agent_main(int argc, char* argv[])
+         BOOT_LOG_RC(&t0, "P4", "nsh_commands_init", rc);
+     }
+ 
++    if (argc > 1 && strcmp(argv[1], "ask") == 0) {
++        s_cli_ready = true;
++        return cli_ask(argc, argv);
++    }
++
++    /* Configuration commands do not need background services or a nested
++     * console.  Execute them using arguments parsed by the working NSH. */
++    if (argc > 1 && strcmp(argv[1], "ask") != 0) {
++        int rc = nsh_commands_run_once(argc - 1, &argv[1]);
++        return rc;
++    }
++
+     /* ── Phase 5: Network — async, does NOT block ready ────── */
+ 
+     /* Kick off WiFi reconnect and start outbound dispatch immediately.
+@@ -691,15 +779,16 @@ int ai_agent_main(int argc, char* argv[])
+     }
+     BOOT_LOG(&t0, "P5", "network_watch thread started (async)");
+ 
+-    /* ── Phase 6: CLI thread — all services now in known state ── */
+-    {
+-        int rc = nsh_commands_start();
+-        BOOT_LOG_RC(&t0, "P6", "nsh_commands_start", rc);
++    if (argc > 1) {
++        sleep(1);
++        nsh_commands_run_once(argc - 1, &argv[1]);
++        syslog(LOG_INFO, "[%s] AI Agent running in one-shot ask mode.\n", TAG);
++    } else {
++        syslog(LOG_INFO, "[%s] Interactive child stdin unavailable; use "
++            "'ai_agent <command>' from NSH.\n", TAG);
++        return OK;
+     }
+ 
+-    syslog(LOG_INFO, "[%s] [boot +%ldms] AI Agent ready. Type 'help' in NSH for commands.\n",
+-        TAG, boot_ms(&t0));
+-
+     /* Block main thread until shutdown is requested */
+     while (!g_shutdown_requested) {
+         sleep(1);
+@@ -740,7 +829,9 @@ int ai_agent_main(int argc, char* argv[])
+     usleep(500 * 1000);
+ 
+     /* Cleanup — reverse order of init */
++#ifdef CONFIG_AI_AGENT_MEDIA
+     tool_media_cleanup();
++#endif
+ #ifdef CONFIG_AI_AGENT_MCP
+     mcp_bridge_cleanup();
+ #endif
+diff --git a/src/channels/cmd_llm.c b/src/channels/cmd_llm.c
+index 0bda07f..1297d41 100644
+--- a/src/channels/cmd_llm.c
++++ b/src/channels/cmd_llm.c
+@@ -28,6 +28,9 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <unistd.h>
++
++#define printf(...) dprintf(STDOUT_FILENO, __VA_ARGS__)
+ 
+ /* ---- Router presets (shared by set_llm and router_set) ---- */
+ 
+@@ -57,6 +60,7 @@ static const router_preset_t g_router_presets[] = {
+ 
+ void cmd_set_llm(int argc, char** argv)
+ {
++    syslog(LOG_DEBUG, "[config] command enter argc=%d\n", argc);
+     if (argc < 2) {
+         printf("Usage: set_llm <preset> [api_key]\n"
+                "       set_llm <url> <model> [api_key]\n"
+@@ -201,10 +205,12 @@ void cmd_set_llm(int argc, char** argv)
+         backend.api_key[sizeof(backend.api_key) - 1] = '\0';
+     } else {
+         llm_backend_t old;
++        syslog(LOG_DEBUG, "[config] existing backend read begin\n");
+         if (llm_router_get_backend(0, &old) == 0 && old.api_key[0]) {
+             strncpy(backend.api_key, old.api_key, sizeof(backend.api_key) - 1);
+             backend.api_key[sizeof(backend.api_key) - 1] = '\0';
+         }
++        syslog(LOG_DEBUG, "[config] existing backend read done\n");
+     }
+ 
+     backend.priority = 0;
+@@ -215,8 +221,14 @@ void cmd_set_llm(int argc, char** argv)
+      * llm_router_apply() -> llm_set_all() already persists
+      * llm_host/llm_path/llm_port/api_key/model to config_store,
+      * so config_show and reboot are covered without extra writes here. */
+-    llm_router_set_backend(0, &backend);
+-    llm_router_apply(0);
++    syslog(LOG_DEBUG, "[config] backend save begin\n");
++    int rc = llm_router_set_backend(0, &backend);
++    syslog(LOG_DEBUG, "[config] backend save returned rc=%d\n", rc);
++    if (rc != 0) return;
++    syslog(LOG_DEBUG, "[config] apply begin\n");
++    rc = llm_router_apply(0);
++    syslog(LOG_DEBUG, "[config] apply returned rc=%d\n", rc);
++    if (rc != 0) return;
+ 
+     printf("LLM backend: %s:%s%s (model: %s) [router slot 0]\n",
+         host, port, path, model ? model : "(unchanged)");
+diff --git a/src/channels/nsh_commands.c b/src/channels/nsh_commands.c
+index 25875b5..c715fb5 100644
+--- a/src/channels/nsh_commands.c
++++ b/src/channels/nsh_commands.c
+@@ -23,7 +23,9 @@
+ #include "channels/nsh_commands.h"
+ #include "channels/cmd_channel.h"
+ #include "channels/cmd_llm.h"
++#ifdef CONFIG_AI_AGENT_VOICE
+ #include "channels/cmd_voice.h"
++#endif
+ #include "core/message_bus.h"
+ #include "infra/config_store.h"
+ #include "infra/cron_service.h"
+@@ -59,11 +61,13 @@
+ 
+ #include <malloc.h>
+ #include <pthread.h>
++#include <stdarg.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <time.h>
+ #include <unistd.h>
++#include <system/readline.h>
+ 
+ #ifdef CONFIG_BOARDCTL_RESET
+ #include <sys/boardctl.h>
+@@ -74,6 +78,20 @@ static const char* TAG = "cli";
+ #define MAX_ARGS 8
+ #define LINE_LEN 256
+ 
++/* Pace descriptor writes: ESP32-P4 USB serial can miss the TX wakeup when
++ * many small writes fill its queue back-to-back. */
++static int cli_printf(const char *fmt, ...)
++{
++    va_list ap;
++    va_start(ap, fmt);
++    int ret = vdprintf(STDOUT_FILENO, fmt, ap);
++    va_end(ap);
++    usleep(5 * 1000);
++    return ret;
++}
++
++#define printf(...) cli_printf(__VA_ARGS__)
++
+ /* ── Helpers ──────────────────────────────────────────────────── */
+ 
+ static int tokenise(char* line, char** argv, int max_argc)
+@@ -127,6 +145,7 @@ static void cmd_help(void)
+         "  restart              - Restart the device\n"
+         "  quit                 - Exit agent\n"
+         "  set_mqtt <broker> [client_id] - Set MQTT broker (host:port)\n"
++#ifdef CONFIG_AI_AGENT_VOICE
+         "  set_volc_key <api_key>       - Set Doubao voice API key\n"
+         "  set_volc_asr <id> <tok> <cluster> - Set ASR credentials\n"
+         "  set_volc_speaker <id>  - Set TTS voice (e.g. zh_female_cancan)\n"
+@@ -136,6 +155,7 @@ static void cmd_help(void)
+         "  voice_test_asr <file>  - Test ASR recognition\n"
+         "  set_voice_tts <name>   - Switch TTS backend\n"
+         "  set_voice_asr <name>   - Switch ASR backend\n"
++#endif
+         "  set_weixin_token <tok> - Set WeChat bot token\n"
+         "  weixin_login           - QR code login to WeChat\n"
+         "  router_status          - Show LLM router status\n"
+@@ -498,7 +518,7 @@ static void cmd_config_show(void)
+     printf("Net Retry: max=%d base=%ds\n",
+         network_get_retry_max(), network_get_retry_base_sec());
+ #endif
+-    printf("=============================\n");
++    dprintf(STDOUT_FILENO, "=============================\n");
+ }
+ 
+ static void cmd_config_reset(void)
+@@ -883,31 +903,23 @@ static void* cli_thread(void* arg)
+     char* argv[MAX_ARGS];
+ 
+     syslog(LOG_INFO, "[%s] NSH CLI started. Type 'help' for commands.\n", TAG);
+-    pthread_mutex_lock(&g_stdout_lock);
+     printf("vela> ");
+-    fflush(stdout);
+-    pthread_mutex_unlock(&g_stdout_lock);
+ 
+-    while (fgets(line, sizeof(line), stdin) != NULL) {
+-        /* Strip trailing newline */
+-        size_t len = strlen(line);
+-        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r'))
++    ssize_t len;
++    while ((len = readline_fd(line, sizeof(line), STDIN_FILENO,
++                              STDOUT_FILENO)) >= 0) {
++        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r')) {
+             line[--len] = '\0';
++        }
+ 
+         if (len == 0) {
+-            pthread_mutex_lock(&g_stdout_lock);
+             printf("vela> ");
+-            fflush(stdout);
+-            pthread_mutex_unlock(&g_stdout_lock);
+             continue;
+         }
+ 
+         int argc = tokenise(line, argv, MAX_ARGS);
+         if (argc == 0) {
+-            pthread_mutex_lock(&g_stdout_lock);
+             printf("vela> ");
+-            fflush(stdout);
+-            pthread_mutex_unlock(&g_stdout_lock);
+             continue;
+         }
+ 
+@@ -992,6 +1004,7 @@ static void* cli_thread(void* arg)
+             break;
+         } else if (strcmp(cmd, "set_mqtt") == 0)
+             cmd_set_mqtt(argc, argv);
++#ifdef CONFIG_AI_AGENT_VOICE
+         else if (strcmp(cmd, "set_volc_key") == 0)
+             cmd_set_volc_key(argc, argv);
+         else if (strcmp(cmd, "set_volc_asr") == 0)
+@@ -1010,6 +1023,7 @@ static void* cli_thread(void* arg)
+             cmd_set_voice_tts(argc, argv);
+         else if (strcmp(cmd, "set_voice_asr") == 0)
+             cmd_set_voice_asr(argc, argv);
++#endif
+         else if (strcmp(cmd, "set_weixin_token") == 0)
+             cmd_set_weixin_token(argc, argv);
+         else if (strcmp(cmd, "weixin_login") == 0)
+@@ -1063,16 +1077,35 @@ static void* cli_thread(void* arg)
+         else
+             printf("Unknown command: %s (type 'help')\n", cmd);
+ 
+-        pthread_mutex_lock(&g_stdout_lock);
+         printf("vela> ");
+-        fflush(stdout);
+-        pthread_mutex_unlock(&g_stdout_lock);
+     }
+ 
+     syslog(LOG_INFO, "[%s] CLI thread exiting\n", TAG);
+     return NULL;
+ }
+ 
++int nsh_commands_run_once(int argc, char **argv)
++{
++    if (argc < 1 || !argv || !argv[0]) {
++        return ERROR;
++    }
++
++    if (strcmp(argv[0], "set_llm") == 0) {
++        cmd_set_llm(argc, argv);
++    } else if (strcmp(argv[0], "config_show") == 0) {
++        cmd_config_show();
++    } else if (strcmp(argv[0], "ask") == 0) {
++        cmd_ask(argc, argv);
++    } else if (strcmp(argv[0], "help") == 0) {
++        cmd_help();
++    } else {
++        dprintf(STDOUT_FILENO, "Unknown agent command: %s\n", argv[0]);
++        return ERROR;
++    }
++
++    return OK;
++}
++
+ /* ── Init / Start ─────────────────────────────────────────────── */
+ 
+ int nsh_commands_init(void)
+@@ -1086,5 +1119,6 @@ int nsh_commands_init(void)
+ 
+ int nsh_commands_start(void)
+ {
+-    return agent_task_create(cli_thread, "agent_cli", AGENT_CLI_STACK, NULL, AGENT_CLI_PRIO);
++    cli_thread(NULL);
++    return OK;
+ }
+diff --git a/src/channels/nsh_commands.h b/src/channels/nsh_commands.h
+index d3dc74e..a3d9489 100644
+--- a/src/channels/nsh_commands.h
++++ b/src/channels/nsh_commands.h
+@@ -40,3 +40,6 @@ int nsh_commands_init(void);
+  * Call after all services are in a known state (post Phase 5).
+  */
+ int nsh_commands_start(void);
++
++/* Execute one Agent command supplied as ai_agent argv. */
++int nsh_commands_run_once(int argc, char **argv);
+diff --git a/src/core/agent_loop.c b/src/core/agent_loop.c
+index 3d9dec3..512b31c 100644
+--- a/src/core/agent_loop.c
++++ b/src/core/agent_loop.c
+@@ -43,11 +43,21 @@
+ #include <string.h>
+ #include <strings.h>
+ #include <sys/time.h>
++#include <time.h>
+ 
+ #include "cJSON.h"
+ 
+ static const char* TAG = "agent";
+ 
++/* Elapsed durations must not change when TLS or NTP sets wall time. */
++static void elapsed_clock(struct timeval *tv)
++{
++    struct timespec ts = {0};
++    clock_gettime(CLOCK_MONOTONIC, &ts);
++    tv->tv_sec = ts.tv_sec;
++    tv->tv_usec = ts.tv_nsec / 1000;
++}
++
+ #define TOOL_OUTPUT_SIZE (8 * 1024)
+ #define TOOL_OUTPUT_SIZE_LARGE (16 * 1024)
+ #define TOOL_OUTPUT_SIZE_MIN (2 * 1024)
+@@ -820,9 +830,9 @@ static char* force_finish_reply(const char* system_prompt,
+     llm_response_t resp;
+     char* result = NULL;
+     struct timeval t0, t1;
+-    gettimeofday(&t0, NULL);
++    elapsed_clock(&t0);
+     int err = llm_chat_tools(system_prompt, messages, NULL, &resp);
+-    gettimeofday(&t1, NULL);
++    elapsed_clock(&t1);
+     uint32_t ms = calc_elapsed_ms(&t0, &t1);
+     bool timed_out = llm_call_timed_out(ms);
+ 
+@@ -889,6 +899,7 @@ static const char* s_working_phrases[] = {
+  * (TTS synthesis of a status phrase wastes time and memory). */
+ static void send_working_status(const agent_msg_t* msg, int iteration)
+ {
++    if (strcmp(msg->channel, "cli_sync") == 0) return;
+     if (iteration != 0) {
+         return;
+     }
+@@ -990,9 +1001,9 @@ static char* handle_task_complete(const char* sys_prompt, cJSON* messages,
+     llm_response_t final_resp;
+     char* result = NULL;
+     struct timeval t0, t1;
+-    gettimeofday(&t0, NULL);
++    elapsed_clock(&t0);
+     int err = llm_chat_tools(sys_prompt, messages, NULL, &final_resp);
+-    gettimeofday(&t1, NULL);
++    elapsed_clock(&t1);
+     uint32_t ms = calc_elapsed_ms(&t0, &t1);
+     bool timed_out = llm_call_timed_out(ms);
+ 
+@@ -1065,9 +1076,9 @@ static char* run_react_loop(const char* sys_prompt, cJSON* messages,
+ 
+         llm_response_t resp;
+         struct timeval tv_start, tv_end;
+-        gettimeofday(&tv_start, NULL);
++        elapsed_clock(&tv_start);
+         int err = llm_chat_tools(sys_prompt, messages, tools_json, &resp);
+-        gettimeofday(&tv_end, NULL);
++        elapsed_clock(&tv_end);
+         uint32_t latency_ms = calc_elapsed_ms(&tv_start, &tv_end);
+ 
+         /* Router failover: on LLM call failure, try next backend */
+@@ -1083,10 +1094,10 @@ static char* run_react_loop(const char* sys_prompt, cJSON* messages,
+                 router_idx = next_idx;
+                 trace.backend_idx = next_idx;
+                 llm_response_free(&resp);
+-                gettimeofday(&tv_start, NULL);
++                elapsed_clock(&tv_start);
+                 err = llm_chat_tools(sys_prompt, messages,
+                     tools_json, &resp);
+-                gettimeofday(&tv_end, NULL);
++                elapsed_clock(&tv_end);
+                 latency_ms = calc_elapsed_ms(&tv_start, &tv_end);
+             }
+         }
+@@ -1183,10 +1194,10 @@ static char* run_react_loop(const char* sys_prompt, cJSON* messages,
+                     router_idx = prem_idx;
+                     trace.backend_idx = prem_idx;
+ 
+-                    gettimeofday(&tv_start, NULL);
++                    elapsed_clock(&tv_start);
+                     err = llm_chat_tools(sys_prompt, messages,
+                         tools_json, &resp);
+-                    gettimeofday(&tv_end, NULL);
++                    elapsed_clock(&tv_end);
+                     latency_ms = calc_elapsed_ms(&tv_start, &tv_end);
+ 
+                     /* Watchdog check on cascade retry */
+@@ -1585,6 +1596,48 @@ int agent_loop_init(void)
+     return OK;
+ }
+ 
++/* Foreground CLI request: reuse ReAct without starting background services. */
++int agent_loop_ask(const char *content)
++{
++    const size_t ctx_size = AGENT_CONTEXT_BUF_SIZE;
++    const size_t hist_size = AGENT_LLM_STREAM_BUF_SIZE;
++    char *prompt = calloc(1, ctx_size);
++    char *history = calloc(1, hist_size);
++    char *tool_output = calloc(1, TOOL_OUTPUT_SIZE);
++    char *tools = tool_registry_get_tools_json();
++    cJSON *messages = NULL;
++    char *reply = NULL;
++    int rc = ERROR;
++    agent_msg_t msg = {0};
++
++    if (!prompt || !history || !tool_output || !tools) goto cleanup;
++    strlcpy(msg.channel, "cli_sync", sizeof(msg.channel));
++    strlcpy(msg.chat_id, "console", sizeof(msg.chat_id));
++    msg.content = (char *)content;
++    context_build_system_prompt(prompt, ctx_size);
++    inject_session_context(prompt, ctx_size, msg.channel, msg.chat_id);
++    messages = build_messages(msg.chat_id, content, history, hist_size);
++    if (!messages) goto cleanup;
++    reply = run_react_loop(prompt, messages, tools, tool_output,
++                          TOOL_OUTPUT_SIZE, &msg);
++    if (reply && reply[0]) {
++        session_append(msg.chat_id, "user", content);
++        session_append(msg.chat_id, "assistant", reply);
++        dprintf(STDOUT_FILENO, "\n[Agent]: %s\n", reply);
++        rc = OK;
++    }
++
++cleanup:
++    if (rc != OK) dprintf(STDOUT_FILENO, "Agent request failed.\n");
++    free(reply);
++    cJSON_Delete(messages);
++    free(tools);
++    free(tool_output);
++    free(history);
++    free(prompt);
++    return rc;
++}
++
+ int agent_loop_start(void)
+ {
+     int ret = agent_task_create(agent_loop_task, "agent_loop",
+diff --git a/src/core/agent_loop.h b/src/core/agent_loop.h
+index 49a1af9..4ef7ede 100644
+--- a/src/core/agent_loop.h
++++ b/src/core/agent_loop.h
+@@ -30,6 +30,7 @@ extern "C" {
+ 
+ int agent_loop_init(void);
+ int agent_loop_start(void);
++int agent_loop_ask(const char *content);
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/src/core/agent_trace.c b/src/core/agent_trace.c
+index 0083f18..c304ccb 100644
+--- a/src/core/agent_trace.c
++++ b/src/core/agent_trace.c
+@@ -19,7 +19,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <sys/time.h>
++#include <time.h>
+ #include <syslog.h>
+ 
+ static const char* TAG = "trace";
+@@ -43,10 +43,10 @@ static const char* status_str(int status)
+ void agent_trace_begin(agent_trace_t* t, const char* chat_id,
+     const char* channel)
+ {
+-    struct timeval tv;
++    struct timespec tv = {0};
+ 
+     memset(t, 0, sizeof(*t));
+-    gettimeofday(&tv, NULL);
++    clock_gettime(CLOCK_MONOTONIC, &tv);
+     t->start_ts = (uint32_t)tv.tv_sec;
+ 
+     /* Generate run_id: lower 32 bits of time + rand for uniqueness */
+@@ -90,9 +90,9 @@ void agent_trace_step(agent_trace_t* t, int iteration,
+ 
+ void agent_trace_end(agent_trace_t* t, int status)
+ {
+-    struct timeval tv;
++    struct timespec tv = {0};
+ 
+-    gettimeofday(&tv, NULL);
++    clock_gettime(CLOCK_MONOTONIC, &tv);
+     t->status = status;
+ 
+     uint32_t elapsed = (uint32_t)tv.tv_sec - t->start_ts;
+diff --git a/src/core/agent_trace.h b/src/core/agent_trace.h
+index f6434ba..8fc0068 100644
+--- a/src/core/agent_trace.h
++++ b/src/core/agent_trace.h
+@@ -46,7 +46,7 @@ typedef struct {
+     char run_id[17]; /* 16 hex chars + NUL */
+     char chat_id[64];
+     char channel[16];
+-    uint32_t start_ts; /* epoch seconds */
++    uint32_t start_ts; /* monotonic seconds */
+     int iteration; /* current iteration number */
+     int backend_idx; /* current router backend index */
+     uint32_t total_latency_ms; /* cumulative LLM latency */
+diff --git a/src/core/memory_store.c b/src/core/memory_store.c
+index 3069ad2..c7e048c 100644
+--- a/src/core/memory_store.c
++++ b/src/core/memory_store.c
+@@ -47,7 +47,10 @@ static void get_date_str(char *buf, size_t size, int days_ago)
+ static int ensure_dir(const char *path)
+ {
+     struct stat st = {0};
++    syslog(LOG_INFO, "[%s] ensure_dir stat begin: %s\n", TAG, path);
+     if (stat(path, &st) == -1) {
++        syslog(LOG_INFO, "[%s] ensure_dir missing: %s, errno=%d\n",
++               TAG, path, errno);
+         /* Try to create parent first */
+         char parent[256];
+         strncpy(parent, path, sizeof(parent) - 1);
+@@ -57,12 +60,17 @@ static int ensure_dir(const char *path)
+             if (ensure_dir(parent) != OK) return ERROR;
+         }
+         
++        syslog(LOG_INFO, "[%s] ensure_dir mkdir begin: %s\n", TAG, path);
+         if (mkdir(path, 0755) == -1) {
+             syslog(LOG_ERR, "[%s] mkdir failed for %s, errno=%d\n", TAG, path, errno);
+             return ERROR;
+         }
++        syslog(LOG_INFO, "[%s] ensure_dir mkdir done: %s\n", TAG, path);
+         syslog(LOG_INFO, "[%s] Created directory: %s\n", TAG, path);
+     }
++    else {
++        syslog(LOG_INFO, "[%s] ensure_dir exists: %s\n", TAG, path);
++    }
+     return OK;
+ }
+ 
+@@ -70,19 +78,29 @@ static int ensure_dir(const char *path)
+ static int ensure_file(const char *path, const char *default_content)
+ {
+     struct stat st = {0};
++    syslog(LOG_INFO, "[%s] ensure_file stat begin: %s\n", TAG, path);
+     if (stat(path, &st) == -1) {
++        syslog(LOG_INFO, "[%s] ensure_file open begin: %s\n", TAG, path);
+         /* File does not exist, create it */
+         FILE *f = fopen(path, "w");
+         if (!f) {
+             syslog(LOG_ERR, "[%s] Cannot create %s, errno=%d\n", TAG, path, errno);
+             return ERROR;
+         }
++        syslog(LOG_INFO, "[%s] ensure_file open done: %s\n", TAG, path);
+         if (default_content) {
++            syslog(LOG_INFO, "[%s] ensure_file write begin: %s\n", TAG, path);
+             fputs(default_content, f);
++            syslog(LOG_INFO, "[%s] ensure_file write done: %s\n", TAG, path);
+         }
++        syslog(LOG_INFO, "[%s] ensure_file close begin: %s\n", TAG, path);
+         fclose(f);
++        syslog(LOG_INFO, "[%s] ensure_file close done: %s\n", TAG, path);
+         syslog(LOG_INFO, "[%s] Created file: %s\n", TAG, path);
+     }
++    else {
++        syslog(LOG_INFO, "[%s] ensure_file exists: %s\n", TAG, path);
++    }
+     return OK;
+ }
+ 
+diff --git a/src/infra/config_store.c b/src/infra/config_store.c
+index da6c428..d96f1fc 100644
+--- a/src/infra/config_store.c
++++ b/src/infra/config_store.c
+@@ -36,6 +36,11 @@
+ static const char *TAG = "cfgstore";
+ 
+ static pthread_mutex_t s_lock = PTHREAD_MUTEX_INITIALIZER;
++static cJSON *s_root;
++
++/* Debugger-visible breadcrumbs; never contain configuration values. */
++volatile unsigned int g_agent_config_stage;
++volatile unsigned int g_agent_config_save_count;
+ 
+ /* ── helpers ─────────────────────────────────────────────────── */
+ 
+@@ -79,21 +84,32 @@ static cJSON *load_json(void)
+ 
+ static int save_json(cJSON *root)
+ {
++    g_agent_config_save_count++;
++    g_agent_config_stage = 10;
+     char *str = cJSON_PrintUnformatted(root);
++    g_agent_config_stage = 11;
+     if (!str) return ERROR;
+ 
+     /* Use open() with explicit 0600 to ensure config file is owner-only.
+      * fopen("w") inherits umask which may be too permissive. */
++    g_agent_config_stage = 20;
+     int fd = open(AGENT_CONFIG_FILE,
+                   O_WRONLY | O_CREAT | O_TRUNC, 0600);
++    g_agent_config_stage = 21;
+     if (fd < 0) { free(str); return ERROR; }
+ 
++    g_agent_config_stage = 30;
+     FILE *f = fdopen(fd, "w");
++    g_agent_config_stage = 31;
+     if (!f) { close(fd); free(str); return ERROR; }
+-    fputs(str, f);
+-    fclose(f);
++    g_agent_config_stage = 40;
++    int written = fputs(str, f);
++    g_agent_config_stage = 50;
++    int closed = fclose(f);
++    g_agent_config_stage = 60;
+     free(str);
+-    return OK;
++    g_agent_config_stage = 61;
++    return written < 0 || closed != 0 ? ERROR : OK;
+ }
+ 
+ /* ── public API ──────────────────────────────────────────────── */
+@@ -104,6 +120,19 @@ int config_store_init(void)
+     mkdirs(AGENT_CONFIG_DIR);
+     mkdirs(AGENT_MEMORY_DIR);
+     mkdirs(AGENT_SESSION_DIR);
++
++    pthread_mutex_lock(&s_lock);
++    if (s_root) {
++        cJSON_Delete(s_root);
++    }
++    s_root = load_json();
++    pthread_mutex_unlock(&s_lock);
++
++    if (!s_root) {
++        syslog(LOG_ERR, "[%s] Failed to initialize config cache\n", TAG);
++        return ERROR;
++    }
++
+     syslog(LOG_INFO, "[%s] Config store ready at %s\n", TAG, AGENT_CONFIG_FILE);
+     return OK;
+ }
+@@ -111,38 +140,45 @@ int config_store_init(void)
+ int claw_config_get(const char *key, char *buf, size_t buf_size)
+ {
+     pthread_mutex_lock(&s_lock);
+-    cJSON *root = load_json();
+-    cJSON *item = cJSON_GetObjectItem(root, key);
++    cJSON *item = s_root ? cJSON_GetObjectItem(s_root, key) : NULL;
+     int ret = ERROR;
+     if (item && cJSON_IsString(item) && item->valuestring[0] != '\0') {
+         strncpy(buf, item->valuestring, buf_size - 1);
+         buf[buf_size - 1] = '\0';
+         ret = OK;
+     }
+-    cJSON_Delete(root);
+     pthread_mutex_unlock(&s_lock);
+     return ret;
+ }
+ 
+ int claw_config_set(const char *key, const char *value)
+ {
++    g_agent_config_stage = 1;
+     pthread_mutex_lock(&s_lock);
+-    cJSON *root = load_json();
+-    cJSON_DeleteItemFromObject(root, key);
+-    cJSON_AddStringToObject(root, key, value);
+-    int ret = save_json(root);
+-    cJSON_Delete(root);
++    g_agent_config_stage = 2;
++    if (!s_root) {
++        s_root = cJSON_CreateObject();
++    }
++    g_agent_config_stage = 3;
++    cJSON_DeleteItemFromObject(s_root, key);
++    cJSON_AddStringToObject(s_root, key, value);
++    g_agent_config_stage = 4;
++    int ret = save_json(s_root);
+     pthread_mutex_unlock(&s_lock);
++    g_agent_config_stage = 70;
++    syslog(LOG_DEBUG, "[config] save %u returned rc=%d\n",
++            g_agent_config_save_count, ret);
+     return ret;
+ }
+ 
+ int config_del(const char *key)
+ {
+     pthread_mutex_lock(&s_lock);
+-    cJSON *root = load_json();
+-    cJSON_DeleteItemFromObject(root, key);
+-    int ret = save_json(root);
+-    cJSON_Delete(root);
++    if (!s_root) {
++        s_root = cJSON_CreateObject();
++    }
++    cJSON_DeleteItemFromObject(s_root, key);
++    int ret = save_json(s_root);
+     pthread_mutex_unlock(&s_lock);
+     return ret;
+ }
+@@ -150,9 +186,9 @@ int config_del(const char *key)
+ int config_erase_all(void)
+ {
+     pthread_mutex_lock(&s_lock);
+-    cJSON *empty = cJSON_CreateObject();
+-    int ret = save_json(empty);
+-    cJSON_Delete(empty);
++    cJSON_Delete(s_root);
++    s_root = cJSON_CreateObject();
++    int ret = s_root ? save_json(s_root) : ERROR;
+     pthread_mutex_unlock(&s_lock);
+     return ret;
+ }
+diff --git a/src/infra/network_manager.c b/src/infra/network_manager.c
+index 00cc296..925d6a1 100644
+--- a/src/infra/network_manager.c
++++ b/src/infra/network_manager.c
+@@ -18,6 +18,7 @@
+ #include "agent_compat.h"
+ 
+ #include <arpa/inet.h>
++#include <errno.h>
+ #include <ifaddrs.h>
+ #include <netinet/in.h>
+ #include <string.h>
+@@ -765,7 +766,7 @@ int network_wifi_reconnect(void)
+     return network_rpmsg_init();
+ }
+ 
+-#else
++#elif defined(CONFIG_NETDEV_WIRELESS)
+ /* Real hardware: use NuttX wapi shell command to join WiFi */
+ #include "infra/config_store.h"
+ #include "agent_config.h"
+@@ -901,4 +902,21 @@ int network_wifi_reconnect(void)
+     agent_config_get(AGENT_CFG_KEY_WIFI_PASS, pass, sizeof(pass));
+     return network_wifi_connect(NULL, ssid, pass);
+ }
++#else
++/* Wired-only targets are configured by board bring-up and netinit. */
++
++int network_wifi_connect(const char* iface, const char* ssid,
++    const char* pass)
++{
++    (void)iface;
++    (void)ssid;
++    (void)pass;
++    syslog(LOG_WARNING, "[%s] WiFi is not available on this target\n", TAG);
++    return -ENOTSUP;
++}
++
++int network_wifi_reconnect(void)
++{
++    return OK;
++}
+ #endif
+diff --git a/src/infra/vela_tls.c b/src/infra/vela_tls.c
+index 0d0ca62..71aa91c 100644
+--- a/src/infra/vela_tls.c
++++ b/src/infra/vela_tls.c
+@@ -272,9 +272,7 @@ static int tls_ctx_connect(tls_ctx_t* ctx, const char* host, const char* port)
+     syslog(LOG_DEBUG, "[%s] Handshake start: Host=%s, UNIX=%ld\n", TAG, host, (long)now);
+ 
+     if (now < 1704067200) { /* Jan 1 2024 */
+-        syslog(LOG_WARNING, "[%s] Clock too old, forcing to 2026\n", TAG);
+-        struct timespec ts = { .tv_sec = 1772275200, .tv_nsec = 0 };
+-        clock_settime(CLOCK_REALTIME, &ts);
++        syslog(LOG_WARNING, "[%s] System clock is not synchronized\n", TAG);
+     }
+ 
+     /* TCP connect — use HTTP CONNECT proxy if configured */
+diff --git a/src/llm/llm_router.c b/src/llm/llm_router.c
+index aa586f2..4b9b2a7 100644
+--- a/src/llm/llm_router.c
++++ b/src/llm/llm_router.c
+@@ -92,11 +92,17 @@ static bool contains_keyword(const char* text, const char** keywords)
+ 
+ int llm_router_init(void)
+ {
++    syslog(LOG_INFO, "[%s] init enter\n", TAG);
++    syslog(LOG_INFO, "[%s] lock begin\n", TAG);
+     pthread_mutex_lock(&s_router_lock);
++    syslog(LOG_INFO, "[%s] lock done\n", TAG);
+ 
+     /* Load profile from config */
+     char tmp[32] = { 0 };
+-    if (claw_config_get(CFG_KEY_ROUTER_PROFILE, tmp, sizeof(tmp)) == 0) {
++    syslog(LOG_INFO, "[%s] profile read begin\n", TAG);
++    int profile_rc = claw_config_get(CFG_KEY_ROUTER_PROFILE, tmp, sizeof(tmp));
++    syslog(LOG_INFO, "[%s] profile read done: %d\n", TAG, profile_rc);
++    if (profile_rc == 0) {
+         if (strcmp(tmp, "eco") == 0) {
+             s_profile = LLM_ROUTE_ECO;
+         } else if (strcmp(tmp, "premium") == 0) {
+@@ -113,7 +119,11 @@ int llm_router_init(void)
+         char json[1024] = { 0 };
+ 
+         snprintf(key, sizeof(key), "%s%d", CFG_KEY_BACKEND_PREFIX, i);
+-        if (claw_config_get(key, json, sizeof(json)) != 0 || json[0] == '\0') {
++        syslog(LOG_INFO, "[%s] backend %d read begin\n", TAG, i);
++        int backend_rc = claw_config_get(key, json, sizeof(json));
++        syslog(LOG_INFO, "[%s] backend %d read done: %d\n",
++            TAG, i, backend_rc);
++        if (backend_rc != 0 || json[0] == '\0') {
+             continue;
+         }
+ 
+diff --git a/src/tools/skill_loader.c b/src/tools/skill_loader.c
+index ea21931..c204a54 100644
+--- a/src/tools/skill_loader.c
++++ b/src/tools/skill_loader.c
+@@ -25,6 +25,7 @@
+ #include "agent_config.h"
+ 
+ #include <stdio.h>
++#include <errno.h>
+ #include <string.h>
+ #include <dirent.h>
+ #include <sys/stat.h>
+@@ -203,9 +204,10 @@ typedef struct {
+ 
+ static const builtin_skill_t s_builtins[] = {
+     { "weather",        BUILTIN_WEATHER        },
+-    { "daily-briefing", BUILTIN_DAILY_BRIEFING },
+-    { "skill-creator",  BUILTIN_SKILL_CREATOR  },
+-    { "system-health",  BUILTIN_SYSTEM_HEALTH  },
++    /* Existing SmartFS volumes use a 16-byte name field including NUL. */
++    { "daily-brief", BUILTIN_DAILY_BRIEFING },
++    { "skill-create",   BUILTIN_SKILL_CREATOR  },
++    { "sys-health",     BUILTIN_SYSTEM_HEALTH  },
+     { "reminder",       BUILTIN_REMINDER       },
+     { "note-taker",     BUILTIN_NOTE_TAKER     },
+     { "translate",      BUILTIN_TRANSLATE      },
+@@ -234,12 +236,21 @@ static void install_builtin(const builtin_skill_t *skill)
+     /* Write built-in skill */
+     f = fopen(path, "w");
+     if (!f) {
+-        syslog(LOG_ERR, "[%s] Cannot write skill: %s\n", TAG, path);
++        int err = errno;
++        syslog(LOG_ERR, "[%s] Cannot open skill for writing: %s, errno=%d\n",
++               TAG, path, err);
+         return;
+     }
+ 
+-    fputs(skill->content, f);
+-    fclose(f);
++    int written = fputs(skill->content, f);
++    int write_errno = written < 0 ? errno : 0;
++    int closed = fclose(f);
++    int close_errno = closed != 0 ? errno : 0;
++    if (written < 0 || closed != 0) {
++        syslog(LOG_ERR, "[%s] Skill write failed: %s, write_errno=%d close_errno=%d\n",
++               TAG, path, write_errno, close_errno);
++        return;
++    }
+     syslog(LOG_INFO, "[%s] Installed built-in skill: %s\n", TAG, path);
+ }
+ 
+diff --git a/src/tools/tool_registry.c b/src/tools/tool_registry.c
+index 33583e7..4b5b71c 100644
+--- a/src/tools/tool_registry.c
++++ b/src/tools/tool_registry.c
+@@ -34,7 +34,10 @@
+ #include "tools/tool_files.h"
+ #include "tools/tool_get_time.h"
+ #include "tools/tool_health.h"
++#include "tools/tool_esp32p4.h"
++#ifdef CONFIG_AI_AGENT_MEDIA
+ #include "tools/tool_media.h"
++#endif
+ #include "tools/tool_proxyquickapp.h"
+ #include "tools/tool_shell.h"
+ #include "tools/tool_system.h"
+@@ -357,6 +360,18 @@ int tool_registry_init(void)
+         "Get step count and step frequency.",
+         tool_get_steps_execute);
+ 
++#ifdef CONFIG_AI_AGENT_ESP32P4_TOOLS
++    REGISTER_TOOL_NO_PARAMS(
++        "device_info",
++        "Get ESP32-P4 board, openvela kernel, uptime, and heap information.",
++        tool_device_info_execute);
++
++    REGISTER_TOOL_NO_PARAMS(
++        "network_status",
++        "Get the eth0 state, MAC address, IPv4 address, netmask, and gateway.",
++        tool_network_status_execute);
++#endif
++
+     /* Device control tools */
+     REGISTER_TOOL(
+         "vibrate",
+@@ -427,6 +442,7 @@ int tool_registry_init(void)
+         tool_feishu_send_mention_execute);
+ 
+     /* Music search */
++#ifdef CONFIG_AI_AGENT_MEDIA
+     REGISTER_TOOL("music_search",
+         "Search songs by keyword. Returns name, artist, URL. "
+         "Does NOT play — call music_play with URL after.",
+@@ -483,6 +499,7 @@ int tool_registry_init(void)
+         "Get current music playback status including state, "
+         "position, duration, volume, and track URL.",
+         tool_music_status_execute);
++#endif
+ 
+     /* QuickApp launch tool */
+     REGISTER_TOOL("launch_quickapp",

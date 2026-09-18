@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "team_id": "contest2026-124",
+  "github_login": "zealsoftstudio",
+  "generator": "codex-rollout-contest-export@1.0",
+  "updated_at": "2026-09-18T12:11:45.460211+00:00",
+  "sessions": [
+    {
+      "session_id": "01a057e0-87e4-7fd2-8cdf-1a702aceefeb",
+      "tool": "codex",
+      "started_at": "2026-08-31T12:53:14.222Z",
+      "last_event_at": "2026-09-18T12:11:44.497Z",
+      "event_count": 3214,
+      "file_path": "logs/zealsoftstudio/2026-08-31/codex__01a057e0-87e4-7fd2-8cdf-1a702aceefeb.jsonl",
+      "collection_mode": "cli",
+      "redacted_count_total": 4641,
+      "health": "degraded",
+      "data_completeness_warning": "Explicit read-only export of Codex public rollout events. System/developer instructions, reasoning, compaction context and image bytes excluded. Event payload text is otherwise retained with automated secret redaction. This is not a claim of having run the official collector plugin."
+    }
+  ]
+}

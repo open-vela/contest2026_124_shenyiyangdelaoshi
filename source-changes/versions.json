@@ -1,0 +1,32 @@
+{
+  "nuttx": {
+    "base": "dd92bcf425738734d1b8aed09c2bd4dbe3f2e438",
+    "local_head": "10c4e09024376a9f5ee1948dbf5512554a0de6a8",
+    "untracked_source_files": [
+      "boards/risc-v/esp32p4/esp32p4-function-ev-board/configs/usbnet/defconfig"
+    ],
+    "status": " M arch/risc-v/src/common/espressif/esp_hr_timer.c\n M arch/risc-v/src/esp32p4/Kconfig\n M arch/risc-v/src/esp32p4/espressif/esp_emac.c\n M arch/risc-v/src/esp32p4/espressif/esp_timer_adapter.c\n M arch/risc-v/src/esp32p4/espressif/esp_usbserial.c\n M boards/Kconfig\n M boards/risc-v/esp32p4/common/src/esp_board_spiflash.c\n M boards/risc-v/esp32p4/esp32p4-function-ev-board/src/esp32p4_bringup.c\n M include/nuttx/net/usrsock.h\n?? boards/risc-v/esp32p4/esp32p4-function-ev-board/configs/usbnet/\n",
+    "note": "Archived current source, not an upstream PR or clean build verification."
+  },
+  "apps": {
+    "base": "dcc6a95c3b323e533c98fde8fb209f99e24f0fdd",
+    "local_head": "dcc6a95c3b323e533c98fde8fb209f99e24f0fdd",
+    "untracked_source_files": [],
+    "status": " M netutils/netinit/Kconfig\n M netutils/netinit/netinit.c\n M nshlib/nsh_command.c\n",
+    "note": "Archived current source, not an upstream PR or clean build verification."
+  },
+  "packages/ai_agent": {
+    "base": "e65550f18759f086d7f544edcf17d1e31223244f",
+    "local_head": "e65550f18759f086d7f544edcf17d1e31223244f",
+    "untracked_source_files": [
+      "include/tools/tool_esp32p4.h",
+      "src/tools/tool_esp32p4.c"
+    ],
+    "status": " M CMakeLists.txt\n M Kconfig\n M Makefile\n M src/agent_main.c\n M src/channels/cmd_llm.c\n M src/channels/nsh_commands.c\n M src/channels/nsh_commands.h\n M src/core/agent_loop.c\n M src/core/agent_loop.h\n M src/core/agent_trace.c\n M src/core/agent_trace.h\n M src/core/memory_store.c\n M src/infra/config_store.c\n M src/infra/network_manager.c\n M src/infra/vela_tls.c\n M src/llm/llm_router.c\n M src/tools/skill_loader.c\n M src/tools/tool_registry.c\n?? include/tools/tool_esp32p4.h\n?? src/tools/tool_esp32p4.c\n",
+    "note": "Archived current source, not an upstream PR or clean build verification."
+  },
+  "firmware": {
+    "bytes": 695176,
+    "sha256": "d8b6cdd16e46cc0a0cef14e6e94a5702bf6da6c4cada3000e93e6b8eeefabae7"
+  }
+}

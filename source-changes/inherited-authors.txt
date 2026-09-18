@@ -1,0 +1,8 @@
+10c4e09024376a9f5ee1948dbf5512554a0de6a8 caoshengdong <caoshengd@gmail.com> esp32p4: recover stalled I2S RX transfers
+86e229ca9c2bb5488d4896ce9e8e9909c2cb559e caoshengdong <caoshengd@gmail.com> esp32p4: SDMMC host driver and SDIO stack fixes for esp-hosted
+2b69a1d099cd9f81e914b1f789f0a015f62e0fbd caoshengdong <caoshengd@gmail.com> esp32p4: input/audio hardening and Function-EV board updates
+ffca34d9fdc76804952dd42dd5982a949eb54b07 caoshengdong <caoshengd@gmail.com> drivers/video: add SmartSens SC2336 image sensor driver
+98f2928675f5b326bdb3ec4ac19feda850839177 caoshengdong <caoshengd@gmail.com> esp32p4: add MIPI-CSI camera capture driver (ISP pipeline + 3A)
+4389640602cc5d932aaa19afd1fbb66f97247220 caoshengdong <caoshengd@gmail.com> esp32p4: clear stale ROM interrupt-matrix routes; I2S bring-up fixes
+d8cfabd4c29080228084118436235c556790f0b9 caoshengdong <caoshengd@gmail.com> esp32p4: fix uninitialized I2C command structs written to hardware
+3f17215b7cf9ac596e09fbe7e05bd77ecede13cf caoshengdong <caoshengd@gmail.com> arch/boards: Add ESP32-P4 support (Function-EV-Board bring-up verified on hardware)
